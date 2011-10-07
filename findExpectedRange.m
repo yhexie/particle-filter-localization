@@ -1,4 +1,4 @@
-function [ z_expected ] = findExpectedRange(angle_deg, position, map, laserRange_m, occupied_threshold)
+function [ z_expected ] = findExpectedRange(angle_deg, position, map, laserRange_m, occupied_threshold, map_resolution)
 %findExpectedRange Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -12,8 +12,12 @@ laserEnd = zeros(1,2);
 
 laserEnd(1) = laserStart(1) + cosd( angle_deg )*laserRange_m;
 laserEnd(2) = laserStart(2) + sind( angle_deg )*laserRange_m;
-[rayVal,~,~,rayX,rayY] = bresenham(map, [laserStart; laserEnd], 1, occupied_threshold );
-z_expected = sqrt((laserStart(1)-rayX(end))^2 + (laserStart(2)-rayY(end))^2);
+
+laserStart = laserStart / map_resolution;
+laserEnd = laserEnd / map_resolution;
+
+[rayVal,~,~,rayX,rayY] = bresenham(map, [laserStart; laserEnd], 0, occupied_threshold );
+z_expected = map_resolution * sqrt((laserStart(1)-rayX(end))^2 + (laserStart(2)-rayY(end))^2);
 
 
 end

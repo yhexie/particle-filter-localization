@@ -11,7 +11,7 @@ clc
 close all
 
 %% Set parameters
-global numParticles occupied_threshold laser_max_range std_dev_hit lambda_short zParams
+global numParticles occupied_threshold laser_max_range std_dev_hit lambda_short zParams map_resolution
 
 numParticles = 1000; % Number of particles
 occupied_threshold = 0.89; % Cells less than this are considered occupied
@@ -59,6 +59,8 @@ plot(particle_mat(2,:)./map_resolution, particle_mat(1,:)./map_resolution, 'x', 
 %% Loop for each log reading
 
 logLength = 20;
+isObservation = ones(logLength, 1);
+
 
 for k = 2:logLength
     
@@ -73,11 +75,22 @@ for k = 2:logLength
     
     hold on;
     plot(particle_mat(2,:)./map_resolution, particle_mat(1,:)./map_resolution, 'g.', 'MarkerSize', 3);
-
-
-% If observation occured
-%   Generate weights
-%   Update weights
-%   Resample?
+    
+    
+    % If observation occured
+    if isObservation(k)
+        
+        for i = 1:numParticles
+            
+            zt = 30 * ones(180,1);
+            
+            [ q ] = beam_range_finder_model( zt, particle_mat(:,i), global_map )
+        
+        %   Generate weights
+        %   Update weights
+        %   Resample?
+        end
+        
+    end
 
 end
