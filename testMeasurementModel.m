@@ -1,6 +1,6 @@
 global laser_max_range std_dev_hit lambda_short zParams occupied_threshold
 
-zParams = [0.7 0.2 0.07 0.03];
+zParams = [0.7 0.2 0.07 0.03]; % [zHit zShort zMax zRand]
 
 laser_max_range = 100;
 std_dev_hit = 0.1;

@@ -22,24 +22,28 @@ odom_y_cur       = action(5);
 odom_theta_cur   = action(6);
 
 
-rot1 = atran2(odom_y_cur - odom_y_prev, odom_x_cur - odom_x_prev);
+rot1 = atan2(odom_y_cur - odom_y_prev, odom_x_cur - odom_x_prev) - odom_theta_prev;
 trans = sqrt((odom_x_prev - odom_x_cur)^2 + (odom_y_prev - odom_y_cur)^2);
 rot2 = odom_theta_cur - odom_theta_prev - rot1;
 
 numP = size(particle_mat,2);
 
-noisy_rot1 = repmat(rot1, numP, 1)      - sqrt(a(1)*rot1^2 + a(2)*trans^2)*rand(numP,1);
-noisy_trans = repmat(trans, numP, 1)    - sqrt(a(3)*trans^2 + a(4)*rot1^2 + a(4)*rot2^2)*rand(numP,1);
-noisy_rot2 = repmat(rot2, numP, 1)      - sqrt(a(1)*rot2^2 + a(2)*trans^2)*rand(numP,1);
+noisy_rot1 = repmat(rot1, numP, 1)      - randn(numP,1) * sqrt( a(1)*rot1^2 + a(2)*trans^2 );
+noisy_trans = repmat(trans, numP, 1)    - randn(numP,1) * sqrt( a(3)*trans^2 + a(4)*rot1^2 + a(4)*rot2^2 );
+noisy_rot2 = repmat(rot2, numP, 1)      - randn(numP,1) * sqrt( a(1)*rot2^2 + a(2)*trans^2 );
 
-x = particle_mat(:,1);
-y = particle_mat(:,2);
-theta = particle_mat(:,3);
+% figure, hist(noisy_rot1 * 180/pi)
+% figure, hist(noisy_trans)
+% figure, hist(noisy_rot2 * 180/pi)
 
-new_x = x + noisy_trans*cos(theta + noisy_rot1);
-new_y = y + noisy_trans*sin(theta + noisy_rot1);
-new_theta = theta + noisy_rot1 + noisy_rot2;
+x = particle_mat(1,:);
+y = particle_mat(2,:);
+theta = particle_mat(3,:);
 
-new_particle_mat = [ new_x new_y new_theta];
+new_x = x + noisy_trans' .* cos(theta + noisy_rot1');
+new_y = y + noisy_trans' .* sin(theta + noisy_rot1');
+new_theta = theta + noisy_rot1' + noisy_rot2';
+
+new_particle_mat = [ new_x; new_y; new_theta];
 end
 
