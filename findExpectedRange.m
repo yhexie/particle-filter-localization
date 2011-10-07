@@ -13,11 +13,14 @@ laserEnd = zeros(1,2);
 laserEnd(1) = laserStart(1) + cosd( angle_deg )*laserRange_m;
 laserEnd(2) = laserStart(2) + sind( angle_deg )*laserRange_m;
 
-laserStart = laserStart / map_resolution;
-laserEnd = laserEnd / map_resolution;
+laserStart_map = laserStart / map_resolution;
+laserEnd_map = laserEnd / map_resolution;
 
-[rayVal,~,~,rayX,rayY] = bresenham(map, [laserStart; laserEnd], 0, occupied_threshold );
-z_expected = map_resolution * sqrt((laserStart(1)-rayX(end))^2 + (laserStart(2)-rayY(end))^2);
+[rayVal,~,~,rayX,rayY] = bresenham(map, [laserStart_map; laserEnd_map], 1, occupied_threshold );
+rayEnd_map = [rayX(end) rayY(end)];
+z_expected = norm(laserStart_map - rayEnd_map) * map_resolution;
+
+z_expected(z_expected>laserRange_m) = laserRange_m;
 
 
 end

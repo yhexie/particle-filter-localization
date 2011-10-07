@@ -13,9 +13,9 @@ close all
 %% Set parameters
 global numParticles occupied_threshold laser_max_range std_dev_hit lambda_short zParams map_resolution
 
-numParticles = 1000; % Number of particles
+numParticles = 100; % Number of particles
 occupied_threshold = 0.89; % Cells less than this are considered occupied
-laser_max_range = 100; % Maximum laser range in meters
+laser_max_range = 20; % Maximum laser range in meters
 std_dev_hit = 0.1; % Standard deviation error in a laser range measurement
 lambda_short = 0.1; % Used to calculate the chance of hitting random people or unmapped obstacles
 zParams = [0.7 0.2 0.07 0.03]; % Weights for beam model [zHit zShort zMax zNoise]
@@ -40,7 +40,7 @@ map_resolution = 0.1;
 rng(1);
 
 % Find all free space on the map
-[freeCellsX, freeCellsY] = find(global_map > occupied_threshold);
+[freeCellsY, freeCellsX] = find(global_map > occupied_threshold);
 freeCellIndices = randperm(length(freeCellsX));
 
 % Randomly place particles in the free space
@@ -52,13 +52,13 @@ particle_mat = [    map_resolution*freeCellsX(freeCellIndices(1:numParticles))';
 figure
 imshow(global_map);
 hold on;
-plot(particle_mat(2,:)./map_resolution, particle_mat(1,:)./map_resolution, 'x', 'MarkerSize', 3);
+plot(particle_mat(1,:)./map_resolution, particle_mat(2,:)./map_resolution, 'rx', 'MarkerSize', 3);
 
 
 
 %% Loop for each log reading
 
-logLength = 20;
+logLength = 3;
 isObservation = ones(logLength, 1);
 
 
@@ -82,7 +82,7 @@ for k = 2:logLength
         
         for i = 1:numParticles
             
-            zt = 30 * ones(180,1);
+            zt = 10 * ones(180,1);
             
             [ q ] = beam_range_finder_model( zt, particle_mat(:,i), global_map )
         
