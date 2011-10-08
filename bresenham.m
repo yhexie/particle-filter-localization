@@ -24,21 +24,21 @@ function [myline,mycoords,outmat,X,Y] = bresenham(mymat,mycoordinates,dispFlag, 
 %
 % See also: tut_line_algorithm
 
-if nargin < 1, % for demo purpose
-    pxl = 20;
-    mymat = 1:pxl^2;
-    mymat = reshape(mymat,pxl,pxl);
-    disp('This is a demo.')
-end
-
-if nargin < 2, % if no coordinate provided
-    imagesc(mymat); axis image;
-    disp('Click two points on the image.')
-    %[mycoordinates(1:2),mycoordinates(3:4)] = ginput(2);
-    mycoordinates = ginput(2);
-end
-
-if nargin < 3, dispFlag = 1; end
+% if nargin < 1, % for demo purpose
+%     pxl = 20;
+%     mymat = 1:pxl^2;
+%     mymat = reshape(mymat,pxl,pxl);
+%     disp('This is a demo.')
+% end
+% 
+% if nargin < 2, % if no coordinate provided
+%     imagesc(mymat); axis image;
+%     disp('Click two points on the image.')
+%     %[mycoordinates(1:2),mycoordinates(3:4)] = ginput(2);
+%     mycoordinates = ginput(2);
+% end
+% 
+% if nargin < 3, dispFlag = 1; end
 
 outmat = mymat;
 mycoords = mycoordinates;
@@ -56,7 +56,12 @@ end
 
 delx = abs(x(2)-x(1));
 dely = abs(y(2)-y(1));
-error = 0;
+
+myline = zeros(1, delx+dely+1);
+X = zeros(1, delx+dely+1);
+Y = zeros(1, delx+dely+1);
+
+error = zeros(1, 'uint8');
 x_n = x(1);
 y_n = y(1);
 if y(1) < y(2), ystep = 1; else ystep = -1; end
@@ -75,7 +80,7 @@ for n = 1:delx+1
         Y(n) = x_n;
     end
     x_n = x_n + xstep;
-    error = error + dely;
+    error = uint8(error + dely);
     if bitshift(error,1) >= delx, % same as -> if 2*error >= delx,
         y_n = y_n + ystep;
         error = error - delx;
@@ -90,9 +95,9 @@ for n = 1:delx+1
     
 end
 % -> a(y,x)
-if dispFlag, imagesc(outmat);
+% if dispFlag, imagesc(outmat);
     
-end
+% end
 
 
 function [q,r] = swap(s,t)

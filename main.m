@@ -1,7 +1,7 @@
 % Main script for particle filter
 
 % Notes:
-% particle_mat: 
+% particle_mat:
 %   3-by-n matrix, where each column is a particle in the form
 %   [x y theta]' in meters and radians [0,2pi)
 
@@ -16,18 +16,19 @@ mapPath = 'data/map/wean.dat';
 logPath = 'data/log/robotdata1.log';
 global numParticles occupied_threshold laser_max_range std_dev_hit lambda_short zParams map_resolution
 
-numParticles = 2; % Number of particles
-w = ones(1,numParticles) / numParticles; % Particle weights - begin with uniform weight
+numParticles = 100; % Number of particles
+w = ones(numParticles,1) / numParticles; % Particle weights - begin with uniform weight
 occupied_threshold = 0.89; % Cells less than this are considered occupied
 laser_max_range = 81.8300; % Maximum laser range in meters
 std_dev_hit = 0.1; % Standard deviation error in a laser range measurement
 lambda_short = 0.1; % Used to calculate the chance of hitting random people or unmapped obstacles
 zParams = [0.7 0.2 0.07 0.03]; % Weights for beam model [zHit zShort zMax zNoise]
+zParams = zParams / norm(zParams);
 
 % odom_params:
 %   4-by-1 vector of odometry error parameters
-odom_params = [0.001 0.001 0.0001 0.0001 ]';
-% odom_params = zeros(4,1);
+% odom_params = [0.001 0.001 0.0001 0.0001 ]';
+odom_params = zeros(4,1);
 
 
 
@@ -54,37 +55,53 @@ rng(1);
 freeCellIndices = randperm(length(freeCellsX));
 
 % Randomly place particles in the free space
-particle_mat = [    map_resolution*freeCellsX(freeCellIndices(1:numParticles))'; 
-                    map_resolution*freeCellsY(freeCellIndices(1:numParticles))'; 
-                    2*pi*rand(1, numParticles)];
+particle_mat = [    map_resolution*freeCellsX(freeCellIndices(1:numParticles))';
+    map_resolution*freeCellsY(freeCellIndices(1:numParticles))';
+    2*pi*rand(1, numParticles)];
 
 % Display the initial particle positions
+% figure
+% imshow(global_map);
+% hold on;
+% plot(particle_mat(2,:)./map_resolution, particle_mat(1,:)./map_resolution, 'rx', 'MarkerSize', 3);
+
+k = 1;
+best_particle = 1;
+robo_mask = generate_robo_mask(.25,.40);
 figure
-imshow(global_map);
-hold on;
-plot(particle_mat(2,:)./map_resolution, particle_mat(1,:)./map_resolution, 'rx', 'MarkerSize', 3);
-
-
+visualize_pf(global_map, [.1 .1], particle_mat', w, z_range(1,1:180), robo_mask, particle_mat(:,best_particle)', k);
 
 %% Loop for each log reading
 
 logLength = length(p_robot);
 
-for k = 2:100
+for k = 2:logLength
     
     % action:
     %   6x1 matrix that expresses the two pose estimates obtained by
     %   the robot’s odometry in the form [x_prev y_prev theta_prev x_cur y_cur theta_cur]’
     action = [p_robot(k-1,1:3) p_robot(k,1:3)]';
     
-
+    
     
     particle_mat = move_particle(action, particle_mat, odom_params);
     
-    hold on;
-    plot(particle_mat(2,:)./map_resolution, particle_mat(1,:)./map_resolution, 'g.', 'MarkerSize', 3);
-    refresh
-    pause(0.01)
+    if observation_index(k) > 1
+        laser_data = z_range(observation_index(k),1:180);
+    else
+        laser_data = zeros(1,180);
+    end
+    clf
+    visualize_pf(global_map, [.1 .1], particle_mat', w, laser_data, robo_mask, particle_mat(:,best_particle)', k);
+%     saveas(gcf, ['images/vis' num2str(k) '.jpg']);
+    %     part_log(k) = particle_mat(3,1)';
+
+    
+    
+%         hold on;
+%         plot(particle_mat(2,:)./map_resolution, particle_mat(1,:)./map_resolution, 'g.', 'MarkerSize', 3);
+%         refresh
+%         pause(0.01)
     
     % If observation occured
     if observation_index(k) > 1
@@ -93,25 +110,28 @@ for k = 2:100
         assert ( z_range(observation_index(k), end) == p_robot(k,end) );
         
         zt = z_range(observation_index(k), 1:180);
-        parfor i = 1:numParticles
+        tic
+        for i = 1:numParticles
             
-
+            
             %   Generate and update weights
             w(i) = w(i)*beam_range_finder_model( zt, particle_mat(:,i), global_map );
-        
+            
         end
+        toc
+%         Normalize weights
+                w = w./norm(w);
+                [~, best_particle] = max(w);
+                
+%                 hold on
+%                 particle_mat(:,best_particle)
+%                 plot(particle_mat(2,best_particle)./map_resolution, particle_mat(1,best_particle)./map_resolution,'mo');
         
-        % Normalize weights
-        w = w./norm(w);
-        [~, best_particle] = max(w);
-        hold on
-        particle_mat(:,best_particle)
-        plot(particle_mat(2,best_particle)./map_resolution, particle_mat(1,best_particle)./map_resolution,'mo');
+                new_particle_mat = stochastic_resample(w, particle_mat');
+                w(:) = 1/numParticles;
         
-        new_particle_mat = stochastic_resample(w, particle_mat');
-        w = ones(1, numParticles) ./ numParticles;
         
         
     end
-
+    
 end
