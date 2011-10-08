@@ -23,7 +23,7 @@ odom_theta_cur   = action(6);
 
 delta_x = odom_x_cur - odom_x_prev;
 delta_y = odom_y_cur - odom_y_prev;
-delta_rot = odom_theta_cur - odom_theta_prev
+delta_rot = odom_theta_cur - odom_theta_prev;
 
 rot1 = atan2(delta_y , delta_x) - odom_theta_prev;
 trans = sqrt((delta_x)^2 + (delta_y)^2);
@@ -46,6 +46,8 @@ theta = particle_mat(3,:);
 new_x = x + noisy_trans' .* cos(theta + noisy_rot1');
 new_y = y + noisy_trans' .* sin(theta + noisy_rot1');
 new_theta = theta + noisy_rot1' + noisy_rot2';
+
+delta_theta = new_theta - theta;
 
 new_particle_mat = [ new_x; new_y; new_theta];
 end

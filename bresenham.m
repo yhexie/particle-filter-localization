@@ -1,5 +1,5 @@
 function [myline,mycoords,outmat,X,Y] = bresenham(mymat,mycoordinates,dispFlag, threshold)
-
+%#codegen
 % BRESENHAM: Generate a line profile of a 2d image
 %            using Bresenham's algorithm
 % [myline,mycoords] = bresenham(mymat,mycoordinates,dispFlag)
@@ -43,7 +43,7 @@ if nargin < 3, dispFlag = 1; end
 outmat = mymat;
 mycoords = mycoordinates;
 
-[ymax, xmax] = size(outmat);
+[xmax, ymax] = size(outmat);
 
 x = round(mycoords(:,1));
 y = round(mycoords(:,2));
@@ -64,13 +64,13 @@ if x(1) < x(2), xstep = 1; else xstep = -1; end
 
 for n = 1:delx+1
     if steep,
-        myline(n) = mymat(x_n,y_n);
-        outmat(x_n,y_n) = 0;
+        myline(n) = mymat(y_n,x_n);
+        outmat(y_n,x_n) = 0;
         X(n) = x_n;
         Y(n) = y_n;
     else
-        myline(n) = mymat(y_n,x_n);
-        outmat(y_n,x_n) = 0;
+        myline(n) = mymat(x_n,y_n);
+        outmat(x_n,y_n) = 0;
         X(n) = y_n;
         Y(n) = x_n;
     end

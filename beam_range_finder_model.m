@@ -30,7 +30,7 @@ robot_position_m = xt(1:2);
 laser_position_m = robot_position_m + [ 0.25*cosd(robot_angle_deg); 
                                         0.25*sind(robot_angle_deg)];
 
-for k = 1:30:numLaserScans
+for k = 1:15:numLaserScans
     
     laser_angle_deg = robot_angle_deg - 90 + (k - 0.5);
     % Ray cast to find expected range

@@ -32,7 +32,7 @@ p_laser(:,1:2) = p_laser(:,1:2) ./ 100; % cm to meters
 range(:,1:180) = range(:,1:180) ./ 100; % cm to meters
 
 % Convert to NED coordinates
-p_robot(:,2:3) = p_robot(:,2:3) * -1;
-p_laser(:,2:3) = p_laser(:,2:3) * -1;
+% p_robot(:,2:3) = p_robot(:,2:3) * -1;
+% p_laser(:,2:3) = p_laser(:,2:3) * -1;
 
 fclose(fid);
