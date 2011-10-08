@@ -8,7 +8,7 @@ rand_number = rand_number + (1:size(w,1))'*num_to_add;
 rand_number  = rem(rand_number,1);
 ind = zeros(size(w,1),1);
 parfor i=1:size(wc,1)
-   [ind(i),~] =  find(wc>rand_number(i),1,'first');
+   [ind(i),~] =  find(wc>=rand_number(i),1,'first');
    
 end
 
