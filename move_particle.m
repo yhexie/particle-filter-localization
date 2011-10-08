@@ -21,9 +21,12 @@ odom_x_cur       = action(4);
 odom_y_cur       = action(5);
 odom_theta_cur   = action(6);
 
+delta_x = odom_x_cur - odom_x_prev;
+delta_y = odom_y_cur - odom_y_prev;
+delta_rot = odom_theta_cur - odom_theta_prev
 
-rot1 = atan2(odom_y_cur - odom_y_prev, odom_x_cur - odom_x_prev) - odom_theta_prev;
-trans = sqrt((odom_x_prev - odom_x_cur)^2 + (odom_y_prev - odom_y_cur)^2);
+rot1 = atan2(delta_y , delta_x) - odom_theta_prev;
+trans = sqrt((delta_x)^2 + (delta_y)^2);
 rot2 = odom_theta_cur - odom_theta_prev - rot1;
 
 numP = size(particle_mat,2);

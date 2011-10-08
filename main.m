@@ -11,6 +11,9 @@ clc
 close all
 
 %% Set parameters
+
+mapPath = 'data/map/wean.dat';
+logPath = 'data/log/robotdata1.log';
 global numParticles occupied_threshold laser_max_range std_dev_hit lambda_short zParams map_resolution
 
 numParticles = 100; % Number of particles
@@ -22,14 +25,20 @@ zParams = [0.7 0.2 0.07 0.03]; % Weights for beam model [zHit zShort zMax zNoise
 
 % odom_params:
 %   4-by-1 vector of odometry error parameters
-odom_params = [0.1 0.1 0.01 0.01 ]';
-% odom_params = zeros(4,1);
+% odom_params = [0.1 0.1 0.01 0.01 ]';
+odom_params = zeros(4,1);
 
-mapPath = 'data/map/wean.dat';
+
 
 %% Load data
 global_map = load(mapPath);
 map_resolution = 0.1;
+
+% p_robot is odometry [x,y,theta,time]
+% p_robot_laser is the position of the robot at the time of laser reading [x,y,theta,time]
+% p_laser is the position of the laser at the time of laser reading [x,y,theta,time]
+% z_range is the range readings [ranges time]
+[p_robot,p_robot_laser,p_laser,z_range] = readlogfiles(logPath);
 
 
 %% Precompute ray casts?
@@ -58,24 +67,26 @@ plot(particle_mat(1,:)./map_resolution, particle_mat(2,:)./map_resolution, 'rx',
 
 %% Loop for each log reading
 
-logLength = 3;
-isObservation = ones(logLength, 1);
+logLength = 200;
+isObservation = zeros(logLength, 1);
 
 
-for k = 2:logLength
+for k = 131:logLength
     
     % action:
     %   6x1 matrix that expresses the two pose estimates obtained by
     %   the robot’s odometry in the form [x_prev y_prev theta_prev x_cur y_cur theta_cur]’
-    action = [ 0 0 pi/2 0 0.01 pi/2 ]';
+%     action = [ 0 0 pi/2 0 0.01 pi/2 ]';
+    action = [p_robot(k-1,1:3) p_robot(k,1:3)]';
     
 
     
     particle_mat = move_particle(action, particle_mat, odom_params);
     
     hold on;
-    plot(particle_mat(2,:)./map_resolution, particle_mat(1,:)./map_resolution, 'g.', 'MarkerSize', 3);
-    
+    plot(particle_mat(1,:)./map_resolution, particle_mat(2,:)./map_resolution, 'g.', 'MarkerSize', 3);
+    refresh
+    pause(0.01)
     
     % If observation occured
     if isObservation(k)
