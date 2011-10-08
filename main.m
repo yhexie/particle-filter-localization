@@ -16,7 +16,7 @@ mapPath = 'data/map/wean.dat';
 logPath = 'data/log/robotdata1.log';
 global numParticles occupied_threshold laser_max_range std_dev_hit lambda_short zParams map_resolution
 
-numParticles = 100; % Number of particles
+numParticles = 5000; % Number of particles
 w = ones(numParticles,1) / numParticles; % Particle weights - begin with uniform weight
 occupied_threshold = 0.89; % Cells less than this are considered occupied
 laser_max_range = 81.8300; % Maximum laser range in meters
@@ -27,8 +27,8 @@ zParams = zParams / norm(zParams);
 
 % odom_params:
 %   4-by-1 vector of odometry error parameters
-% odom_params = [0.001 0.001 0.0001 0.0001 ]';
-odom_params = zeros(4,1);
+odom_params = [0.001 0.001 0.0001 0.0001 ]';
+% odom_params = zeros(4,1);
 
 
 
@@ -42,7 +42,19 @@ map_resolution = 0.1;
 % z_range is the range readings [ranges time]
 [p_robot,observation_index,p_laser,z_range] = readlogfiles(logPath);
 
+%% Compute likelihood field
+scaled_sigma = std_dev_hit/map_resolution;
+hsize = 30;
+h = fspecial('gaussian', hsize, scaled_sigma);
 
+global_map_thresholded = global_map ;
+global_map_thresholded(global_map_thresholded==-1) = 1;
+global_map_thresholded(global_map_thresholded>0.2) = 1;
+global_map_thresholded(global_map_thresholded==-1) = 1;
+global_map_thresholded = ones(size(global_map_thresholded)) - global_map_thresholded;
+% figure, imshow(global_map_thresholded);
+likelihood_field = imfilter(global_map_thresholded, h);
+% figure, imshow(likelihood_field);
 %% Precompute ray casts?
 
 %% Generate random starting particles in free space
@@ -68,7 +80,7 @@ particle_mat = [    map_resolution*freeCellsX(freeCellIndices(1:numParticles))';
 k = 1;
 best_particle = 1;
 robo_mask = generate_robo_mask(.25,.40);
-figure
+figure(1)
 visualize_pf(global_map, [.1 .1], particle_mat', w, z_range(1,1:180), robo_mask, particle_mat(:,best_particle)', k);
 
 %% Loop for each log reading
@@ -91,12 +103,9 @@ for k = 2:logLength
     else
         laser_data = zeros(1,180);
     end
+    figure(1)
     clf
-    visualize_pf(global_map, [.1 .1], particle_mat', w, laser_data, robo_mask, particle_mat(:,best_particle)', k);
-%     saveas(gcf, ['images/vis' num2str(k) '.jpg']);
-    %     part_log(k) = particle_mat(3,1)';
-
-    
+    visualize_pf(global_map, [.1 .1], particle_mat', w, laser_data, robo_mask, particle_mat(:,best_particle)', k);   
     
 %         hold on;
 %         plot(particle_mat(2,:)./map_resolution, particle_mat(1,:)./map_resolution, 'g.', 'MarkerSize', 3);
@@ -115,20 +124,20 @@ for k = 2:logLength
             
             
             %   Generate and update weights
-            w(i) = w(i)*beam_range_finder_model( zt, particle_mat(:,i), global_map );
-            
+%             w(i) = w(i)*beam_range_finder_model( zt, particle_mat(:,i), global_map );
+            w(i) = w(i)*likelihood_field_range_finder_model( zt, particle_mat(:,i), likelihood_field );
         end
         toc
 %         Normalize weights
                 w = w./norm(w);
+                figure(2)
+                plot(w, '.');
                 [~, best_particle] = max(w);
                 
-%                 hold on
-%                 particle_mat(:,best_particle)
-%                 plot(particle_mat(2,best_particle)./map_resolution, particle_mat(1,best_particle)./map_resolution,'mo');
-        
-                new_particle_mat = stochastic_resample(w, particle_mat');
-                w(:) = 1/numParticles;
+                if (mod(k,20) == 0)
+                    new_particle_mat = stochastic_resample(w, particle_mat');
+                    w(:) = 1/numParticles;
+                end
         
         
         

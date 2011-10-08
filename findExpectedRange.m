@@ -17,8 +17,10 @@ laserEnd(2) = laserStart(2) + sind( angle_deg )*laserRange_m;
 laserStart_map = laserStart / map_resolution;
 laserEnd_map = laserEnd / map_resolution;
 
-% hold on;
+hold on;
 % plot([laserStart_map(2) laserEnd_map(2)], [laserStart_map(1) laserEnd_map(1)], 'c'); 
+% refresh
+% pause(0.1);
 start_endPoints = [laserStart_map; laserEnd_map];
 
 [rayVal,~,~,rayX,rayY] = bresenham(map, start_endPoints, drawFlag, occupied_threshold );
