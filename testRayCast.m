@@ -4,10 +4,10 @@
 laserStart = [579, 764];
 laserEnd = zeros(1,2);
 laserRange_m = 90;%81.83;
-occupied_threshold = 0.7;
+occupied_threshold = 0.3;
 
 robot_theta = 2*pi/2;
-
+wean = map_xy
 for r = 1:180
     
     laserEnd(1) = laserStart(1) + cosd( (r-0.5) + ( robot_theta * 180/pi - 90) )*laserRange_m;
