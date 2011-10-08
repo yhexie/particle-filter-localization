@@ -9,6 +9,7 @@
 %% Reset
 clc
 close all
+clear
 
 %% Set parameters
 
@@ -16,7 +17,7 @@ mapPath = 'data/map/wean.dat';
 logPath = 'data/log/robotdata1.log';
 global numParticles occupied_threshold laser_max_range std_dev_hit lambda_short zParams map_resolution
 
-numParticles = 100; % Number of particles
+numParticles = 10; % Number of particles
 occupied_threshold = 0.89; % Cells less than this are considered occupied
 laser_max_range = 20; % Maximum laser range in meters
 std_dev_hit = 0.1; % Standard deviation error in a laser range measurement
@@ -25,8 +26,8 @@ zParams = [0.7 0.2 0.07 0.03]; % Weights for beam model [zHit zShort zMax zNoise
 
 % odom_params:
 %   4-by-1 vector of odometry error parameters
-% odom_params = [0.1 0.1 0.01 0.01 ]';
-odom_params = zeros(4,1);
+odom_params = [0.001 0.001 0.0001 0.0001 ]';
+% odom_params = zeros(4,1);
 
 
 
@@ -38,7 +39,7 @@ map_resolution = 0.1;
 % p_robot_laser is the position of the robot at the time of laser reading [x,y,theta,time]
 % p_laser is the position of the laser at the time of laser reading [x,y,theta,time]
 % z_range is the range readings [ranges time]
-[p_robot,p_robot_laser,p_laser,z_range] = readlogfiles(logPath);
+[p_robot,observation_index,p_laser,z_range] = readlogfiles(logPath);
 
 
 %% Precompute ray casts?
@@ -67,16 +68,13 @@ plot(particle_mat(1,:)./map_resolution, particle_mat(2,:)./map_resolution, 'rx',
 
 %% Loop for each log reading
 
-logLength = 200;
-isObservation = zeros(logLength, 1);
+logLength = length(p_robot);
 
-
-for k = 131:logLength
+for k = 2:200
     
     % action:
     %   6x1 matrix that expresses the two pose estimates obtained by
     %   the robot’s odometry in the form [x_prev y_prev theta_prev x_cur y_cur theta_cur]’
-%     action = [ 0 0 pi/2 0 0.01 pi/2 ]';
     action = [p_robot(k-1,1:3) p_robot(k,1:3)]';
     
 
@@ -89,19 +87,19 @@ for k = 131:logLength
     pause(0.01)
     
     % If observation occured
-    if isObservation(k)
-        
-        for i = 1:numParticles
-            
-            zt = 10 * ones(180,1);
-            
-            [ q ] = beam_range_finder_model( zt, particle_mat(:,i), global_map )
-        
-        %   Generate weights
-        %   Update weights
-        %   Resample?
-        end
-        
-    end
+%     if observation_index(k) > 1
+%         
+%         for i = 1:numParticles
+%             
+%             zt = 10 * ones(180,1);
+%             
+%             [ q ] = beam_range_finder_model( zt, particle_mat(:,i), global_map )
+%         
+%         %   Generate weights
+%         %   Update weights
+%         %   Resample?
+%         end
+%         
+%     end
 
 end
