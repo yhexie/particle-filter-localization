@@ -55,7 +55,10 @@ global_map_thresholded = ones(size(global_map_thresholded)) - global_map_thresho
 % figure, imshow(global_map_thresholded);
 likelihood_field = imfilter(global_map_thresholded, h);
 % figure, imshow(likelihood_field);
+
+
 %% Precompute ray casts?
+
 
 %% Generate random starting particles in free space
 
@@ -94,8 +97,6 @@ for k = 2:logLength
     %   the robot’s odometry in the form [x_prev y_prev theta_prev x_cur y_cur theta_cur]’
     action = [p_robot(k-1,1:3) p_robot(k,1:3)]';
     
-    
-    
     particle_mat = move_particle(action, particle_mat, odom_params);
     
     if observation_index(k) > 1
@@ -105,12 +106,7 @@ for k = 2:logLength
     end
     figure(1)
     clf
-    visualize_pf(global_map, [.1 .1], particle_mat', w, laser_data, robo_mask, particle_mat(:,best_particle)', k);   
-    
-%         hold on;
-%         plot(particle_mat(2,:)./map_resolution, particle_mat(1,:)./map_resolution, 'g.', 'MarkerSize', 3);
-%         refresh
-%         pause(0.01)
+    visualize_pf(global_map, [.1 .1], particle_mat', w, laser_data, robo_mask, particle_mat(:,best_particle)', k);
     
     % If observation occured
     if observation_index(k) > 1
@@ -119,25 +115,28 @@ for k = 2:logLength
         assert ( z_range(observation_index(k), end) == p_robot(k,end) );
         
         zt = z_range(observation_index(k), 1:180);
+        
         tic
         for i = 1:numParticles
             
             
             %   Generate and update weights
-%             w(i) = w(i)*beam_range_finder_model( zt, particle_mat(:,i), global_map );
+            % w(i) = w(i)*beam_range_finder_model( zt, particle_mat(:,i), global_map );
             w(i) = w(i)*likelihood_field_range_finder_model( zt, particle_mat(:,i), likelihood_field );
         end
         toc
-%         Normalize weights
-                w = w./norm(w);
-                figure(2)
-                plot(w, '.');
-                [~, best_particle] = max(w);
-                
-                if (mod(k,20) == 0)
-                    new_particle_mat = stochastic_resample(w, particle_mat');
-                    w(:) = 1/numParticles;
-                end
+        
+        
+        % Normalize weights
+        w = w./norm(w);
+        figure(2)
+        plot(w, '.');
+        [~, best_particle] = max(w);
+        
+        if (mod(k,20) == 0)
+            new_particle_mat = stochastic_resample(w, particle_mat');
+            w(:) = 1/numParticles;
+        end
         
         
         
