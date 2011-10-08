@@ -43,10 +43,10 @@ end
 q = [cos(selected_particle(3)/2) 0 0 -sin(selected_particle(3)/2)];
 [~,max_index]= max(mask(:,1));
 laser_origin = mask(max_index,:);
-laser_origin = quatrotate(q,[laser_origin,0]);
+laser_origin = quatrotate_(q,[laser_origin,0]);
 laser_origin(:,1) = laser_origin(:,1)/scale(1) + selected_particle(1)/scale(1);
 laser_origin(:,2) = laser_origin(:,2)/scale(2) + selected_particle(2)/scale(2);
-mask = quatrotate(q,[mask,zeros(size(mask,1),1)]);
+mask = quatrotate_(q,[mask,zeros(size(mask,1),1)]);
 mask(:,1) = mask(:,1)/scale(1) + selected_particle(1)/scale(1);
 mask(:,2) = mask(:,2)/scale(2) + selected_particle(2)/scale(2);
 
@@ -56,7 +56,7 @@ mask(:,2) = mask(:,2)/scale(2) + selected_particle(2)/scale(2);
 %% observation display
 angles = -pi/2:pi/180:pi/2-pi/180;
 r_vec = [cos(angles'),sin(angles'),zeros(size(angles'))];
-r_vec = quatrotate(q,r_vec);
+r_vec = quatrotate_(q,r_vec);
 r_vec = repmat(observation',1,3).*r_vec;
 r_vec(:,1) = r_vec(:,1)/scale(1);
 r_vec(:,2) = r_vec(:,2)/scale(2);
