@@ -1,4 +1,4 @@
-function visualize_pf(map,scale,x,w,observation,mask,selected_particle)
+function visualize_pf(map,scale,x,w,observation,mask,selected_particle,count)
 %map is the grid map (800X800)
 % x is the particle matrix nX3
 % w are the weights(nX1)
@@ -40,7 +40,7 @@ end
 %im(:,:,1) = im(:,:,1)/max(max(im(:,:,1)));
 
 %% robot display
-q = [cos(selected_particle(3)/2) 0 0 -sin(selected_particle(3)/2)];
+q = [cos(selected_particle(3)/2) 0 0 sin(selected_particle(3)/2)];
 [~,max_index]= max(mask(:,1));
 laser_origin = mask(max_index,:);
 laser_origin = quatrotate_(q,[laser_origin,0]);
@@ -71,7 +71,8 @@ imshow(im)
 hold on
 patch(mask(:,2),mask(:,1),'b','FaceAlpha',0.7)
 patch(r_vec(:,2),r_vec(:,1),'y','FaceAlpha',0.2);
-
+set(gcf,'PaperType','A5');
+print(gcf,strcat('movie/',strcat(int2str(count),'.tif')),'-dtiff','-r300');
 
 % use plot to display lines
 end
