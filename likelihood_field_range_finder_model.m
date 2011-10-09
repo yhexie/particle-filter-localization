@@ -28,43 +28,24 @@ robot_position_m = xt(1:2);
 laser_position_m = robot_position_m + [ 0.25*cosd(robot_angle_deg); 
                                         0.25*sind(robot_angle_deg)];
                
-laser_angles_deg = 0.5:1:179.5;   
+interval = 10;                                    
+laser_angles_deg = 0.5:interval:179.5;   
 laser_positions_m = repmat(laser_position_m, 1, length(laser_angles_deg));
 
-laser_end_position_m = laser_positions_m + [zt .* cosd(laser_angles_deg + robot_angle_deg - 90);
-                                            zt .* sind(laser_angles_deg + robot_angle_deg - 90)];
+laser_end_position_m = laser_positions_m + [zt(1:interval:end) .* cosd(laser_angles_deg + robot_angle_deg - 90);
+                                            zt(1:interval:end) .* sind(laser_angles_deg + robot_angle_deg - 90)];
 
-% hold on;
-% plot(laser_end_position_m(2,:)*10, laser_end_position_m(1,:)*10, 'r.');
+
 scale = 0.1;
 x_index = round(laser_end_position_m(1,:)'./scale);
 y_index = round(laser_end_position_m(2,:)'./scale);
 
-% mask = x_index>size(lh_field,1);
-% zt(mask) = [];
-% x_index(mask) = [];
-% y_index(mask) = [];
-% 
-% mask = x_index<1;
-% zt(mask) = [];
-% x_index(mask) = [];
-% y_index(mask) = [];
-% 
-% mask = y_index>size(lh_field,1);
-% zt(mask) = [];
-% x_index(mask) = [];
-% y_index(mask) = [];
-% 
-% mask = y_index<1;
-% zt(mask) = [];
-% x_index(mask) = [];
-% y_index(mask) = [];
-
 
 if (any(x_index>size(lh_field,1)) || any(x_index<1) || any(y_index>size(lh_field,2)) || any(y_index<1))
-    likelihood = 0;
+    likelihood = (zRand/zMax)^length(laser_angles_deg);
     return;
 end
+
 end_point_index = sub2ind(size(lh_field), x_index, y_index);
 % false_field = zeros(size(lh_field));
 % false_field(end_point_index) = 1;
@@ -77,6 +58,8 @@ q(zt >= laser_max_range) = 1;
 likelihood = prod(q);
 
 % figure, imshow(lh_field)
+% hold on;
+% plot(laser_end_position_m(2,:)*10, laser_end_position_m(1,:)*10, 'r.');
 % figure, plot(q)
 % keyboard
 end

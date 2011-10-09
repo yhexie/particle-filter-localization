@@ -67,7 +67,7 @@ r_vec = [laser_origin;r_vec;laser_origin];
 
 im(im<0) = 0;
 im(im>1) = 1;
-imshow(im)
+imshow(im, 'InitialMagnification', 'fit')
 hold on
 patch(mask(:,2),mask(:,1),'b','FaceAlpha',0.7)
 patch(r_vec(:,2),r_vec(:,1),'y','FaceAlpha',0.2);

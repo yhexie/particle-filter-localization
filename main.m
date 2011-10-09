@@ -16,13 +16,13 @@ mapPath = 'data/map/wean.dat';
 logPath = 'data/log/robotdata1.log';
 global numParticles occupied_threshold laser_max_range std_dev_hit lambda_short zParams map_resolution
 
-numParticles = 5000; % Number of particles
+numParticles = 10000; % Number of particles
 w = ones(numParticles,1) / numParticles; % Particle weights - begin with uniform weight
 occupied_threshold = 0.89; % Cells less than this are considered occupied
 laser_max_range = 81.8300; % Maximum laser range in meters
 std_dev_hit = 0.1; % Standard deviation error in a laser range measurement
 lambda_short = 0.1; % Used to calculate the chance of hitting random people or unmapped obstacles
-zParams = [0.7 0.2 0.07 0.03]; % Weights for beam model [zHit zShort zMax zNoise]
+zParams = [0.7 0.2 0.06 0.04]; % Weights for beam model [zHit zShort zMax zNoise]
 zParams = zParams / norm(zParams);
 
 % odom_params:
@@ -116,7 +116,7 @@ for k = 2:logLength
         
         zt = z_range(observation_index(k), 1:180);
         
-        tic
+        
         for i = 1:numParticles
             
             
@@ -124,19 +124,23 @@ for k = 2:logLength
             % w(i) = w(i)*beam_range_finder_model( zt, particle_mat(:,i), global_map );
             w(i) = w(i)*likelihood_field_range_finder_model( zt, particle_mat(:,i), likelihood_field );
         end
-        toc
+        
         
         
         % Normalize weights
-        w = w./norm(w);
+%         figure, hist(w)
+        norm_w = w./sum(w);
         figure(2)
-        plot(w, '.');
-        [~, best_particle] = max(w);
+        plot(norm_w, '.');
+        [~, best_particle] = max(norm_w);
         
-        if (mod(k,20) == 0)
-            new_particle_mat = stochastic_resample(w, particle_mat');
+        if (mod(k,5) == 0)
+            disp('Resampling...');
+            new_particle_mat = stochastic_resample(norm_w, particle_mat');
+            particle_mat = new_particle_mat';
             w(:) = 1/numParticles;
         end
+        
         
         
         

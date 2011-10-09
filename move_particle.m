@@ -49,6 +49,8 @@ new_theta = theta + noisy_rot1' + noisy_rot2';
 
 delta_theta = new_theta - theta;
 
+theta = mod(theta, 2*pi);
+
 new_particle_mat = [ new_x; new_y; new_theta];
 end
 
