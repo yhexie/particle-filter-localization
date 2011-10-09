@@ -1,6 +1,8 @@
-function [ new_particle_mat ] = move_particle( action, particle_mat, odom_alpha )
+function [ new_particle_mat ] = move_particle( action, particle_mat, odom_alpha, global_map, recursion_count )
 %move_particle Moves all the particles according to the measured action and
 %               motion model
+
+global numParticles occupied_threshold laser_max_range std_dev_hit lambda_short zParams map_resolution
 
 % action:   
 %   6x1 matrix that expresses the two pose estimates obtained by 
@@ -52,5 +54,34 @@ delta_theta = new_theta - theta;
 theta = mod(theta, 2*pi);
 
 new_particle_mat = [ new_x; new_y; new_theta];
+
+%% Check for invalid particles that collide with walls
+x_coor = round(new_x./map_resolution);
+y_coor = round(new_y./map_resolution);
+
+[x_map_size, y_map_size] = size(global_map);
+x_coor(x_coor > x_map_size) = x_map_size;
+y_coor(y_coor > y_map_size) = y_map_size;
+x_coor(x_coor < 1) = 1;
+y_coor(y_coor < 1) = 1;
+
+map_index = sub2ind(size(global_map), x_coor, y_coor);
+
+invalid_particles = global_map(map_index) < occupied_threshold;
+numInvalidParticles = sum(invalid_particles);
+
+% recursion time?
+if numInvalidParticles > 0
+    if (numInvalidParticles > numParticles/10 && recursion_count < 1)
+        recursion_count = recursion_count + 1;
+        replacement_particles = move_particle( action, particle_mat(:,invalid_particles), odom_alpha, global_map, recursion_count );
+        new_particle_mat(:, invalid_particles) = replacement_particles;
+    else
+        [ replacement_particles ] = generateRandomParticles( numInvalidParticles, global_map, map_resolution, occupied_threshold );
+        new_particle_mat(:, invalid_particles) = replacement_particles;
+%         disp(['Added ' num2str(numInvalidParticles) ' random particles...']);
+    end
+end
+
 end
 

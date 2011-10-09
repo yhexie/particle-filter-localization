@@ -13,7 +13,7 @@ clear
 %% Set parameters
 
 mapPath = 'data/map/wean.dat';
-logPath = 'data/log/robotdata1.log';
+logPath = 'data/log/ascii-robotdata2.log';
 global numParticles occupied_threshold laser_max_range std_dev_hit lambda_short zParams map_resolution
 
 numParticles = 5000; % Number of particles
@@ -27,14 +27,14 @@ zParams = zParams / sum(zParams)
 
 % odom_params:
 %   4-by-1 vector of odometry error parameters
-odom_params = [0.1 0.1 0.1 0.1 ]';
+odom_params = [0.001 0.001 0.0001 0.0001 ]';
 % odom_params = zeros(4,1);
 
 
 
 %% Load data
 [global_map,map_size,auto_shift,map_dim,resolution]  = readmap(mapPath);
-map_resolution = 0.1;
+map_resolution = 1/resolution;
 
 % p_robot is odometry [x,y,theta,time]
 % p_robot_laser is the position of the robot at the time of laser reading [x,y,theta,time]
@@ -63,22 +63,10 @@ likelihood_field = imfilter(global_map_thresholded, h);
 %% Generate random starting particles in free space
 
 % Seed the random number generate so we can get repeatable results
-%rng(uint32(1));
+rng(1);
 
-% Find all free space on the map
-[freeCellsX, freeCellsY] = find(global_map > occupied_threshold);
-freeCellIndices = randperm(length(freeCellsX));
+[ particle_mat ] = generateRandomParticles( numParticles, global_map, map_resolution, occupied_threshold );
 
-% Randomly place particles in the free space
-particle_mat = [    map_resolution*freeCellsX(freeCellIndices(1:numParticles))';
-    map_resolution*freeCellsY(freeCellIndices(1:numParticles))';
-    2*pi*rand(1, numParticles)];
-
-% Display the initial particle positions
-% figure
-% imshow(global_map);
-% hold on;
-% plot(particle_mat(2,:)./map_resolution, particle_mat(1,:)./map_resolution, 'rx', 'MarkerSize', 3);
 
 k = 1;
 best_particle = 1;
@@ -90,14 +78,15 @@ visualize_pf(global_map, [.1 .1], particle_mat', w, z_range(1,1:180), robo_mask,
 
 logLength = length(p_robot);
 
-for k = 500:logLength
+for k = 2:logLength
     
     % action:
     %   6x1 matrix that expresses the two pose estimates obtained by
     %   the robot’s odometry in the form [x_prev y_prev theta_prev x_cur y_cur theta_cur]’
     action = [p_robot(k-1,1:3) p_robot(k,1:3)]';
     
-    particle_mat = move_particle(action, particle_mat, odom_params);
+    recursion_count = 0;
+    particle_mat = move_particle(action, particle_mat, odom_params, global_map, recursion_count);
     
     if observation_index(k) > 1
         laser_data = z_range(observation_index(k),1:180);
@@ -119,8 +108,6 @@ for k = 500:logLength
        
         
         for i = 1:numParticles
-            
-            
             %   Generate and update weights
             % w(i) = w(i)*beam_range_finder_model( zt, particle_mat(:,i), global_map );
             w(i) = w(i)*likelihood_field_range_finder_model( zt, particle_mat(:,i), likelihood_field );
@@ -129,17 +116,18 @@ for k = 500:logLength
         
         
         % Normalize weights
-        %         figure, hist(w)
         if (sum(w) == 0)
             norm_w(:) = 1/numParticles;
         else
             norm_w = w./sum(w);
         end
+        
         figure(2)
         plot(norm_w, '.');
         [~, best_particle] = max(norm_w);
         
         if ((ESS(w) < 0.5*numParticles) && mod(i,5)==0)
+%         if (mod(observation_index(k),5) == 0)
             disp('Resampling...');
             new_particle_mat = stochastic_resample(norm_w, particle_mat');
             particle_mat = new_particle_mat';
