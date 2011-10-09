@@ -23,7 +23,7 @@ laser_max_range = 81.8300; % Maximum laser range in meters
 std_dev_hit = 0.1; % Standard deviation error in a laser range measurement
 lambda_short = 0.1; % Used to calculate the chance of hitting random people or unmapped obstacles
 zParams = [0.85 0 0.1 0.15]; % Weights for beam model [zHit zShort zMax zNoise]
-zParams = zParams / sum(zParams);
+zParams = zParams / sum(zParams)
 
 % odom_params:
 %   4-by-1 vector of odometry error parameters
@@ -90,7 +90,7 @@ visualize_pf(global_map, [.1 .1], particle_mat', w, z_range(1,1:180), robo_mask,
 
 logLength = length(p_robot);
 
-for k = 2:logLength
+for k = 500:logLength
     
     % action:
     %   6x1 matrix that expresses the two pose estimates obtained by
