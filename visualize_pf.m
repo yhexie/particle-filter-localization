@@ -71,8 +71,9 @@ imshow(im, 'InitialMagnification', 'fit')
 hold on
 patch(mask(:,2),mask(:,1),'b','FaceAlpha',0.7)
 patch(r_vec(:,2),r_vec(:,1),'y','FaceAlpha',0.2);
-set(gcf,'PaperType','A5');
-print(gcf,strcat('movie/',strcat(int2str(count),'.tif')),'-dtiff','-r300');
+saveas(gcf, strcat('movie/',strcat(int2str(count),'.jpg')));
+% set(gcf,'PaperType','A5');
+% print(gcf,strcat('movie/',strcat(int2str(count),'.tif')),'-dtiff','-r300');
 
 % use plot to display lines
 end
