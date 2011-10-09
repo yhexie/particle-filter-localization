@@ -1,8 +1,9 @@
 function xn = stochastic_resample(w,x)
 w = w/sum(w);
 wc  = cumsum(w);
+wc(end) = 1;
 num_to_add = 1/size(wc,1);
-rand_number = wc(find(wc>rand(1),1,'first'));
+rand_number = wc(find(wc>=rand(1),1,'first'));
 rand_number = repmat(rand_number,size(w,1),1);
 rand_number = rand_number + (1:size(w,1))'*num_to_add;
 rand_number  = rem(rand_number,1);

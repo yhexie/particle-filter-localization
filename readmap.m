@@ -1,6 +1,6 @@
 function [map_xy,map_size,auto_shift,map_dim,resolution]  = readmap(map_str)
 fid = fopen(map_str);
-map_xy = []
+map_xy = [];
 count = 0;
 tline = fgetl(fid);
 count = count+1;

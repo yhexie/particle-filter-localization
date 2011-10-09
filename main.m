@@ -27,13 +27,13 @@ zParams = zParams / sum(zParams);
 
 % odom_params:
 %   4-by-1 vector of odometry error parameters
-odom_params = [0.001 0.001 0.0001 0.0001 ]';
+odom_params = [0.1 0.1 0.1 0.1 ]';
 % odom_params = zeros(4,1);
 
 
 
 %% Load data
-global_map = load(mapPath);
+[global_map,map_size,auto_shift,map_dim,resolution]  = readmap(mapPath);
 map_resolution = 0.1;
 
 % p_robot is odometry [x,y,theta,time]
@@ -63,7 +63,7 @@ likelihood_field = imfilter(global_map_thresholded, h);
 %% Generate random starting particles in free space
 
 % Seed the random number generate so we can get repeatable results
-rng(1);
+%rng(uint32(1));
 
 % Find all free space on the map
 [freeCellsX, freeCellsY] = find(global_map > occupied_threshold);
@@ -139,8 +139,7 @@ for k = 2:logLength
         plot(norm_w, '.');
         [~, best_particle] = max(norm_w);
         
-
-        if (mod(k,5) == 0)
+        if ((ESS(w) < 0.5*numParticles) && mod(i,5)==0)
             disp('Resampling...');
             new_particle_mat = stochastic_resample(norm_w, particle_mat');
             particle_mat = new_particle_mat';
