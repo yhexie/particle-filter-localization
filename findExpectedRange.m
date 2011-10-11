@@ -18,23 +18,32 @@ laserStart_map = laserStart / map_resolution;
 laserEnd_map = laserEnd / map_resolution;
 
 hold on;
-% plot([laserStart_map(2) laserEnd_map(2)], [laserStart_map(1) laserEnd_map(1)], 'c'); 
+% plot([laserStart_map(2) laserEnd_map(2)], [laserStart_map(1) laserEnd_map(1)], 'c');
 % refresh
 % pause(0.1);
 start_endPoints = [laserStart_map; laserEnd_map];
 
-[rayVal,~,~,rayX,rayY] = bresenham(map, start_endPoints, drawFlag, occupied_threshold );
-
-if drawFlag
-    refresh;
-    pause(0.1);
-end
-
-rayEnd_map = [rayX(end) rayY(end)];
-z_expected = norm(laserStart_map - rayEnd_map) * map_resolution;
-
-z_expected(z_expected>laserRange_m) = laserRange_m;
-
+% if (any(laserEnd_map > size(occupied_threshold)) || any(laserEnd_map < 1))
+%     z_expected = laserRange_m;
+%     
+% else
+    [rayVal,~,~,rayX,rayY] = bresenham(map, start_endPoints, drawFlag, occupied_threshold );
+    
+    if drawFlag
+        refresh;
+        pause(0.1);
+    end
+    
+    rayEnd_map = [rayX(end) rayY(end)];
+    
+    if any(rayEnd_map==0)
+        z_expected = laserRange_m;
+    end
+    
+    z_expected = norm(laserStart_map - rayEnd_map) * map_resolution;
+    
+    z_expected(z_expected>laserRange_m) = laserRange_m;
+% end
 
 end
 
