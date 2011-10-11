@@ -50,12 +50,15 @@ hsize = 30;
 h = fspecial('gaussian', hsize, scaled_sigma);
 
 global_map_thresholded = global_map ;
+global_map_thresholded(global_map_thresholded==1) = -2;
 global_map_thresholded(global_map_thresholded==-1) = 1;
-global_map_thresholded(global_map_thresholded>0.2) = 1;
-global_map_thresholded(global_map_thresholded==-1) = 1;
+global_map_thresholded(global_map_thresholded>0.3) = 1;
+global_map_thresholded(global_map_thresholded==-2) = 0.7;
+
 global_map_thresholded = ones(size(global_map_thresholded)) - global_map_thresholded;
 % figure, imshow(global_map_thresholded);
 likelihood_field = imfilter(global_map_thresholded, h);
+likelihood_field(likelihood_field>0.4) = 1.0;
 figure, imshow(likelihood_field);
 
 
@@ -65,7 +68,7 @@ figure, imshow(likelihood_field);
 %% Generate random starting particles in free space
 
 % Seed the random number generate so we can get repeatable results
-rng(1);
+%rng(1);
 
 [ particle_mat ] = generateRandomParticles( numParticles, global_map, map_resolution, occupied_threshold );
 
@@ -131,7 +134,7 @@ for k = 130:logLength
         plot(norm_w, '.');
         [~, best_particle] = max(norm_w);
         
-        if ((ESS(w) < 0.5*numParticles) && mod(i,5)==0)
+        if ((ESS(w) < 0.01*numParticles) && mod(i,5)==0)
 %         if (mod(observation_index(k),5) == 0)
             disp('Resampling...');
             new_particle_mat = stochastic_resample(norm_w, particle_mat');
