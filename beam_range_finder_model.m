@@ -32,7 +32,7 @@ laser_position_m = robot_position_m + [ 0.25*cosd(robot_angle_deg);
 % z_expected = zeros(1,numLaserScans);
 z_expected = findExpectedRange_(robot_angle_deg, laser_position_m, map, laser_max_range, occupied_threshold, map_resolution);
 
-for k = 1:15:numLaserScans
+for k = 1:5:numLaserScans
     
 %     laser_angle_deg = robot_angle_deg - 90 + (k - 0.5);
     % Ray cast to find expected range
@@ -46,7 +46,7 @@ for k = 1:15:numLaserScans
     
     p = zHit*pHit + zShort*pShort + zMax*pMax + zRand*pRand;
     
-    q = q*p^(1/10);
+    q = q*p;
 end
 
 % q = q^(1/10);
