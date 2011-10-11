@@ -1,4 +1,6 @@
 function xn = stochastic_resample(w,x)
+% figure
+% scatter3(x(:,1),x(:,2),w)
 w = w/sum(w);
 wc  = cumsum(w);
 wc(end) = 1;

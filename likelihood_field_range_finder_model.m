@@ -28,7 +28,7 @@ robot_position_m = xt(1:2);
 laser_position_m = robot_position_m + [ 0.25*cosd(robot_angle_deg); 
                                         0.25*sind(robot_angle_deg)];
                
-interval = 5;                                    
+interval = 10;                                    
 laser_angles_deg = 0.5:interval:179.5;   
 laser_positions_m = repmat(laser_position_m, 1, length(laser_angles_deg));
 
@@ -61,7 +61,7 @@ end_point_index = sub2ind(size(lh_field), valid_x_index, valid_y_index);
 % figure; imagesc(false_field);
 
 
-q = zHit*lh_field(end_point_index) + 0.9; %+ repmat(zRand/zMax, length(end_point_index), 1);
+q = zHit*lh_field(end_point_index) + 1; %+ repmat(zRand/zMax, length(end_point_index), 1);
 q(valid_zt >= laser_max_range) = 1;
 
 % if (length(laser_angles_deg)-length(q) ~=0)
@@ -70,7 +70,7 @@ q(valid_zt >= laser_max_range) = 1;
  if (length(laser_angles_deg)-length(q) ==0)
     likelihood = prod(q); 
  else
-     likelihood = prod(q) * 0.4^(length(laser_angles_deg)-length(q));%(zRand/zMax)^(length(laser_angles_deg)-length(q));
+     likelihood = prod(q) * 0.9^(length(laser_angles_deg)-length(q));%(zRand/zMax)^(length(laser_angles_deg)-length(q));
  end
 
 % figure, imshow(lh_field)
