@@ -2,8 +2,12 @@ function [ probHit ] = calcProbHit(z, z_expected, z_max, std_dev_hit)
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
-assert(z_max >= z_expected);
-assert(z_max >= z);
+if (z_expected > z_max )
+    keyboard
+end
+if (z > z_max )
+    keyboard
+end
 
 if (z >= 0 && z <= z_max)
     

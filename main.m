@@ -13,21 +13,23 @@ clear
 %% Set parameters
 
 mapPath = 'data/map/wean.dat';
-logPath = 'data/log/ascii-robotdata2.log';
+logPath = 'data/log/robotdata1.log';
 global numParticles occupied_threshold laser_max_range std_dev_hit lambda_short zParams map_resolution
 
-numParticles = 5000; % Number of particles
+numParticles = 10000; % Number of particles
 w = ones(numParticles,1) / numParticles; % Particle weights - begin with uniform weight
 occupied_threshold = 0.89; % Cells less than this are considered occupied
 laser_max_range = 81.8300; % Maximum laser range in meters
-std_dev_hit = 0.1; % Standard deviation error in a laser range measurement
+std_dev_hit = 0.5; % Standard deviation error in a laser range measurement
 lambda_short = 0.1; % Used to calculate the chance of hitting random people or unmapped obstacles
 zParams = [0.85 0 0.1 0.15]; % Weights for beam model [zHit zShort zMax zNoise]
+% zParams = [0.6 0 0.1 0.3]
 zParams = zParams / sum(zParams)
 
 % odom_params:
 %   4-by-1 vector of odometry error parameters
-odom_params = [0.001 0.001 0.0001 0.0001 ]';
+% odom_params = [0.001 0.001 0.0001 0.0001 ]';
+odom_params = [0.05 0.01 0.005 0.0005]';
 % odom_params = zeros(4,1);
 
 
@@ -54,7 +56,7 @@ global_map_thresholded(global_map_thresholded==-1) = 1;
 global_map_thresholded = ones(size(global_map_thresholded)) - global_map_thresholded;
 % figure, imshow(global_map_thresholded);
 likelihood_field = imfilter(global_map_thresholded, h);
-% figure, imshow(likelihood_field);
+figure, imshow(likelihood_field);
 
 
 %% Precompute ray casts?
@@ -77,8 +79,8 @@ visualize_pf(global_map, [.1 .1], particle_mat', w, z_range(1,1:180), robo_mask,
 %% Loop for each log reading
 
 logLength = length(p_robot);
-
-for k = 2:logLength
+count = 3;
+for k = 130:logLength
     
     % action:
     %   6x1 matrix that expresses the two pose estimates obtained by
@@ -106,13 +108,16 @@ for k = 2:logLength
         zt = z_range(observation_index(k), 1:180);
         
        
-        
+        tic
         for i = 1:numParticles
             %   Generate and update weights
-            % w(i) = w(i)*beam_range_finder_model( zt, particle_mat(:,i), global_map );
-            w(i) = w(i)*likelihood_field_range_finder_model( zt, particle_mat(:,i), likelihood_field );
+            if count < 3
+                w(i) = w(i)*beam_range_finder_model( zt, particle_mat(:,i), global_map );
+            else
+                w(i) = w(i)*likelihood_field_range_finder_model( zt, particle_mat(:,i), likelihood_field );
+            end
         end
-        
+        toc
         
         
         % Normalize weights
@@ -136,7 +141,8 @@ for k = 2:logLength
         
         
         
-        
+       count = count + 1; 
     end
+    
     
 end
