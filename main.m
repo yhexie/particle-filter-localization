@@ -197,14 +197,14 @@ for k = 200:logLength
     
     
     if observation_index(k) == 0
-        figure(2)
-        plot(w, '.');
-        [~, best_particle] = max(w);
-        ylim([ 0 1.25*max(w)])
-        
-        figure(1)
-        clf
-        visualize_pf(global_map, [.1 .1], particle_mat', w, laser_data, robo_mask, particle_mat(:,best_particle)', k,num_interval);
+%         figure(2)
+%         plot(w, '.');
+%         [~, best_particle] = max(w);
+%         ylim([ 0 1.25*max(w)])
+%         
+%         figure(1)
+%         clf
+%         visualize_pf(global_map, [.1 .1], particle_mat', w, laser_data, robo_mask, particle_mat(:,best_particle)', k,num_interval);
     end
     count
     k
