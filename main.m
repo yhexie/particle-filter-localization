@@ -16,7 +16,7 @@ mapPath = 'data/map/wean.dat';
 logPath = 'data/log/robotdata1.log';
 global numParticles occupied_threshold laser_max_range std_dev_hit lambda_short zParams map_resolution
 
-numParticles = 10000; % Number of particles
+numParticles =30000; % Number of particles
 w = ones(numParticles,1) / numParticles; % Particle weights - begin with uniform weight
 occupied_threshold = 0.89; % Cells less than this are considered occupied
 laser_max_range = 81.8300; % Maximum laser range in meters
@@ -77,13 +77,13 @@ k = 1;
 best_particle = 1;
 robo_mask = generate_robo_mask(.25,.40);
 figure(1)
-visualize_pf(global_map, [.1 .1], particle_mat', w, z_range(1,1:180), robo_mask, particle_mat(:,best_particle)', k);
+%visualize_pf(global_map, [.1 .1], particle_mat', w, z_range(1,1:180), robo_mask, particle_mat(:,best_particle)', k);
 
 %% Loop for each log reading
 
 logLength = length(p_robot);
 count = 3;
-for k = 130:logLength
+for k = 2:logLength
     
     % action:
     %   6x1 matrix that expresses the two pose estimates obtained by
@@ -98,9 +98,7 @@ for k = 130:logLength
     else
         laser_data = zeros(1,180);
     end
-    figure(1)
-    clf
-    visualize_pf(global_map, [.1 .1], particle_mat', w, laser_data, robo_mask, particle_mat(:,best_particle)', k);
+    
             
     % If observation occured
     if observation_index(k) > 1
@@ -114,11 +112,11 @@ for k = 130:logLength
         tic
         for i = 1:numParticles
             %   Generate and update weights
-            if count < 3
-                w(i) = w(i)*beam_range_finder_model( zt, particle_mat(:,i), global_map );
-            else
+           % if count < 3
+                %w(i) = w(i)*beam_range_finder_model( zt, particle_mat(:,i), global_map );
+            %else
                 w(i) = w(i)*likelihood_field_range_finder_model( zt, particle_mat(:,i), likelihood_field );
-            end
+            %end
         end
         toc
         
@@ -128,13 +126,19 @@ for k = 130:logLength
             norm_w(:) = 1/numParticles;
         else
             norm_w = w./sum(w);
+            w = norm_w;
         end
+     
         
-        figure(2)
+         figure(2)
         plot(norm_w, '.');
-        [~, best_particle] = max(norm_w);
+        [~, best_particle] = max(w);
         
-        if ((ESS(w) < 0.01*numParticles) && mod(i,5)==0)
+         figure(1)
+        clf
+        visualize_pf(global_map, [.1 .1], particle_mat', w, laser_data, robo_mask, particle_mat(:,best_particle)', k);
+        
+       if ((ESS(w) < 0.1*numParticles) && mod(k,5)==0)
 %         if (mod(observation_index(k),5) == 0)
             disp('Resampling...');
             new_particle_mat = stochastic_resample(norm_w, particle_mat');
@@ -142,10 +146,19 @@ for k = 130:logLength
             w(:) = 1/numParticles;
         end
         
-        
-        
-       count = count + 1; 
+               count = count + 1; 
     end
     
     
+    
+    if observation_index(k) < 1    
+        figure(2)
+        plot(w, '.');
+        [~, best_particle] = max(w);
+        
+        figure(1)
+        clf
+        visualize_pf(global_map, [.1 .1], particle_mat', w, laser_data, robo_mask, particle_mat(:,best_particle)', k);
+    end
+    k
 end
