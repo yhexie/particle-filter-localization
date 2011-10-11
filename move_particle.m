@@ -1,8 +1,8 @@
-function [ new_particle_mat ] = move_particle( action, particle_mat, odom_alpha, global_map, recursion_count )
+function [ new_particle_mat ] = move_particle( action, particle_mat, odom_alpha, global_map, free_threshold, recursion_count )
 %move_particle Moves all the particles according to the measured action and
 %               motion model
 
-global numParticles occupied_threshold laser_max_range std_dev_hit lambda_short zParams map_resolution
+global numParticles laser_max_range std_dev_hit lambda_short zParams map_resolution
 
 % action:   
 %   6x1 matrix that expresses the two pose estimates obtained by 
@@ -67,7 +67,7 @@ y_coor(y_coor < 1) = 1;
 
 map_index = sub2ind(size(global_map), x_coor, y_coor);
 
-invalid_particles = global_map(map_index) < occupied_threshold;
+invalid_particles = global_map(map_index) < free_threshold;
 numInvalidParticles = sum(invalid_particles);
 
 % recursion time?
@@ -81,7 +81,7 @@ if numInvalidParticles > 0
     else
 %         disp('Number of invalid particles')
 %         disp(numInvalidParticles)
-        [ replacement_particles ] = generateRandomParticles( numInvalidParticles, global_map, map_resolution, occupied_threshold );
+        [ replacement_particles ] = generateRandomParticles( numInvalidParticles, global_map, map_resolution, free_threshold );
         new_particle_mat(:, invalid_particles) = replacement_particles;
 %         disp(['Added ' num2str(numInvalidParticles) ' random particles...']);
     end
