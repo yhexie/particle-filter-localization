@@ -1,4 +1,4 @@
-function [ z_expected ] = findExpectedRange_(angle_deg, position, map, laserRange_m, occupied_threshold, map_resolution)
+function [ z_expected ] = findExpectedRange_(angle_deg, position, map, laserRange_m, occupied_threshold, map_resolution,num_interval)
 % tic
 r = 0:laserRange_m/map_resolution;
 r=r';
@@ -6,6 +6,8 @@ r = repmat(r,1,3);
 r = reshape(r',1,[]); % [0 0 0 1 1 1 2 2 2 ... range_cm range_cm range_cm]
 r = repmat(r,180,1);
 angles = -pi/2:pi/180:pi/2-pi/180;
+size_scan = max(size(angles));
+angles = angles(1:num_interval:size_scan);
 angles = angles + deg2rad(angle_deg);
 r_vec = [cos(angles'),sin(angles'),zeros(size(angles'))];
 r_vec = repmat(r_vec,1,size(r,2)/3);

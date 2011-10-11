@@ -34,6 +34,9 @@ zParams = [0.7 0.2 0.0075 0.1]; % Weights for beam model [zHit zShort zMax zNois
 % zParams = [0.6 0 0.1 0.3]
 zParams = zParams / sum(zParams)
 
+%spacing between laser hits being considered
+num_interval=5;
+
 % odom_params:
 %   4-by-1 vector of odometry error parameters
 % odom_params = [0.001 0.001 0.0001 0.0001 ]';
@@ -106,7 +109,7 @@ for k = 200:logLength
     if observation_index(k) > 1
         laser_data = z_range(observation_index(k),1:180);
     else
-        laser_data = zeros(1,180);
+       % laser_data = zeros(1,180);
     end
     
     
@@ -139,7 +142,7 @@ for k = 200:logLength
         
         %if lostFlag
             parfor i = 1:numParticles
-                w(i) = w(i)*beam_range_finder_model( zt, particle_mat(:,i), global_map, laser_max_range, std_dev_hit, lambda_short, zParams, occupied_threshold, map_resolution );
+                w(i) = w(i)*beam_range_finder_model( zt, particle_mat(:,i), global_map, laser_max_range, std_dev_hit, lambda_short, zParams, occupied_threshold, map_resolution,num_interval);
             end
             
         %else
@@ -169,7 +172,7 @@ for k = 200:logLength
         
         figure(1)
         clf
-        visualize_pf(global_map, [.1 .1], particle_mat', w, zt, robo_mask, particle_mat(:,best_particle)', k);
+        visualize_pf(global_map, [.1 .1], particle_mat', w, zt, robo_mask, particle_mat(:,best_particle)', k,num_interval);
         refresh
         pause(0.1)
         
@@ -201,7 +204,7 @@ for k = 200:logLength
         
         figure(1)
         clf
-        visualize_pf(global_map, [.1 .1], particle_mat', w, laser_data, robo_mask, particle_mat(:,best_particle)', k);
+        visualize_pf(global_map, [.1 .1], particle_mat', w, laser_data, robo_mask, particle_mat(:,best_particle)', k,num_interval);
     end
     count
     k

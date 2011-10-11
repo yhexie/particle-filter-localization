@@ -1,4 +1,4 @@
-function visualize_pf(map,scale,x,w,observation,mask,selected_particle,count)
+function visualize_pf(map,scale,x,w,observation,mask,selected_particle,count,num_interval)
 %map is the grid map (800X800)
 % x is the particle matrix nX3
 % w are the weights(nX1)
@@ -62,6 +62,8 @@ r_vec(:,1) = r_vec(:,1)/scale(1);
 r_vec(:,2) = r_vec(:,2)/scale(2);
 r_vec(:,1) = r_vec(:,1) + laser_origin(1);
 r_vec(:,2) = r_vec(:,2) + laser_origin(2);
+scansize = size(r_vec,1);
+r_vec = r_vec(1:num_interval:scansize,:);
 r_vec = [laser_origin;r_vec;laser_origin];
 
 
