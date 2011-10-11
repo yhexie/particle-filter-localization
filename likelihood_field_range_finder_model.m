@@ -1,4 +1,4 @@
-function [ likelihood ] = likelihood_field_range_finder_model( zt, xt, lh_field )
+function [ likelihood ] = likelihood_field_range_finder_model( zt, xt, lh_field, laser_max_range, std_dev_hit, lambda_short, zParams, occupied_threshold, map_resolution )
 %beam_range_finder_model Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -11,7 +11,7 @@ function [ likelihood ] = likelihood_field_range_finder_model( zt, xt, lh_field 
 % lh_field:
 %   The likelihood field for the map
 
-global laser_max_range std_dev_hit lambda_short zParams occupied_threshold map_resolution
+% global laser_max_range std_dev_hit lambda_short zParams occupied_threshold map_resolution
 
 
 zHit = zParams(1);

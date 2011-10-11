@@ -72,15 +72,15 @@ numInvalidParticles = sum(invalid_particles);
 
 % recursion time?
 if numInvalidParticles > 0
-     disp('Number of invalid particles')
-        disp(numInvalidParticles)
+%      disp('Number of invalid particles')
+%         disp(numInvalidParticles)
     if (numInvalidParticles > numParticles/10 && recursion_count < 1)
         recursion_count = recursion_count + 1;
         replacement_particles = move_particle( action, particle_mat(:,invalid_particles), odom_alpha, global_map, recursion_count );
         new_particle_mat(:, invalid_particles) = replacement_particles;
     else
-        disp('Number of invalid particles')
-        disp(numInvalidParticles)
+%         disp('Number of invalid particles')
+%         disp(numInvalidParticles)
         [ replacement_particles ] = generateRandomParticles( numInvalidParticles, global_map, map_resolution, occupied_threshold );
         new_particle_mat(:, invalid_particles) = replacement_particles;
 %         disp(['Added ' num2str(numInvalidParticles) ' random particles...']);

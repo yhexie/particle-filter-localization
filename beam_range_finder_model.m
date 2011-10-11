@@ -1,4 +1,4 @@
-function [ q ] = beam_range_finder_model( zt, xt, map )
+function [ q ] = beam_range_finder_model( zt, xt, map, laser_max_range, std_dev_hit, lambda_short, zParams, occupied_threshold, map_resolution )
 %beam_range_finder_model Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -11,7 +11,7 @@ function [ q ] = beam_range_finder_model( zt, xt, map )
 % map:
 %   The occupancy grid map to localize within
 
-global laser_max_range std_dev_hit lambda_short zParams occupied_threshold map_resolution
+% global laser_max_range std_dev_hit lambda_short zParams occupied_threshold map_resolution
 
 q = 1;
 
@@ -29,10 +29,10 @@ robot_position_m = xt(1:2);
 laser_position_m = robot_position_m + [ 0.25*cosd(robot_angle_deg); 
                                         0.25*sind(robot_angle_deg)];
 
-z_expected = zeros(1,numLaserScans);
+% z_expected = zeros(1,numLaserScans);
 z_expected = findExpectedRange_(robot_angle_deg, laser_position_m, map, laser_max_range, occupied_threshold, map_resolution);
 
-for k = 1:30:numLaserScans
+for k = 1:15:numLaserScans
     
 %     laser_angle_deg = robot_angle_deg - 90 + (k - 0.5);
     % Ray cast to find expected range
@@ -46,10 +46,10 @@ for k = 1:30:numLaserScans
     
     p = zHit*pHit + zShort*pShort + zMax*pMax + zRand*pRand;
     
-    q = q*p;
+    q = q*p^(1/10);
 end
 
-
+% q = q^(1/10);
 % figure, plot(z_expected, '.');
 end
 
