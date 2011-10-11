@@ -19,5 +19,6 @@ w(i) = w(i)*beam_range_finder_model( zt, particle_mat(:,i), global_map, laser_ma
 end
 figure, plot(w)
 norm_w = w./sum(w);
-norm_w = norm_w.^(1/1000);
+norm_w = norm_w.^(1/10);
+norm_w = norm_w./sum(norm_w);
 figure, plot(norm_w)

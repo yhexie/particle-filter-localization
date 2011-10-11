@@ -21,17 +21,22 @@ end
 
 mapPath = 'data/map/wean.dat';
 logPath = 'data/log/robotdata1.log';
-global numParticles occupied_threshold laser_max_range std_dev_hit lambda_short zParams map_resolution
+global numParticles laser_max_range std_dev_hit lambda_short zParams map_resolution
 
 numParticles = 10000; % Number of particles
 w = ones(numParticles,1) / numParticles; % Particle weights - begin with uniform weight
 norm_w = w./sum(w);
-occupied_threshold = 0.89; % Cells less than this are considered occupied
+free_threshold = 0.89; % Cells less than this are considered occupied
+occupied_threshold = 0.1;
+
 laser_max_range = 81.8300; % Maximum laser range in meters
-std_dev_hit = 0.2; % Standard deviation error in a laser range measurement
-lambda_short = 0.1; % Used to calculate the chance of hitting random people or unmapped obstacles
-zParams = [0.7 0.2 0.0075 0.1]; % Weights for beam model [zHit zShort zMax zNoise]
+% std_dev_hit = 0.2; % Standard deviation error in a laser range measurement
+std_dev_hit = 2;
+% lambda_short = 0.1; % Used to calculate the chance of hitting random people or unmapped obstacles
+lambda_short = 0.03;
+% zParams = [0.7 0.2 0.0075 0.1]; % Weights for beam model [zHit zShort zMax zNoise]
 % zParams = [0.6 0 0.1 0.3]
+zParams = [0.3 0.15 0.0075 0.1];
 zParams = zParams / sum(zParams)
 
 %spacing between laser hits being considered
@@ -48,6 +53,12 @@ odom_params = [0.05 0.01 0.005 0.0005]';
 %% Load data
 [global_map,map_size,auto_shift,map_dim,resolution]  = readmap(mapPath);
 map_resolution = 1/resolution;
+
+global_map(global_map == -1) = 0.5;
+
+display_map = global_map;
+display_map(display_map>occupied_threshold) = 1;
+% figure, imshow(display_map)
 
 % p_robot is odometry [x,y,theta,time]
 % p_robot_laser is the position of the robot at the time of laser reading [x,y,theta,time]
@@ -81,7 +92,7 @@ likelihood_field = imfilter(global_map_thresholded, h);
 % Seed the random number generate so we can get repeatable results
 %rng(1);
 
-[ particle_mat ] = generateRandomParticles( numParticles, global_map, map_resolution, occupied_threshold );
+[ particle_mat ] = generateRandomParticles( numParticles, global_map, map_resolution, free_threshold );
 
 
 k = 1;
@@ -96,7 +107,7 @@ logLength = length(p_robot);
 count = 1;
 
 laser_data = zeros(1,180);
-for k = 200:logLength
+for k = 2:logLength
     
     % action:
     %   6x1 matrix that expresses the two pose estimates obtained by
@@ -104,7 +115,7 @@ for k = 200:logLength
     action = [p_robot(k-1,1:3) p_robot(k,1:3)]';
     
     recursion_count = 0;
-    particle_mat = move_particle(action, particle_mat, odom_params, global_map, recursion_count);
+    particle_mat = move_particle(action, particle_mat, odom_params, global_map, free_threshold, recursion_count);
     
     if observation_index(k) > 1
         laser_data = z_range(observation_index(k),1:180);
@@ -160,7 +171,7 @@ for k = 200:logLength
             w(:) = 1/numParticles;
         else
             w = w./sum(w);
-            w = w.^(1/50);
+            w = w.^(1/5);
             w = w./sum(w);
         end
         
@@ -178,7 +189,7 @@ for k = 200:logLength
         
         % Check if we should reduce the number of particles?
         
-        if count == 3
+        if count == 4
             numParticles = round(numParticles/10);
         end
         % Resample
