@@ -60,18 +60,20 @@ end_point_index = sub2ind(size(lh_field), valid_x_index, valid_y_index);
 % false_field(end_point_index) = 1;
 % figure; imagesc(false_field);
 
+% q = zHit*lh_field(end_point_index) + 1; %+ repmat(zRand/zMax, length(end_point_index), 1);
+q = zHit*lh_field(end_point_index) + repmat(zRand/zMax, length(end_point_index), 1);
+q(valid_zt >= laser_max_range) = zMax;
 
-q = zHit*lh_field(end_point_index) + 1; %+ repmat(zRand/zMax, length(end_point_index), 1);
-q(valid_zt >= laser_max_range) = 1;
+likelihood = prod(q);
 
 % if (length(laser_angles_deg)-length(q) ~=0)
 %     keyboard
 % end
- if (length(laser_angles_deg)-length(q) ==0)
-    likelihood = prod(q); 
- else
-     likelihood = prod(q) * 0.9^(length(laser_angles_deg)-length(q));%(zRand/zMax)^(length(laser_angles_deg)-length(q));
- end
+%  if (length(laser_angles_deg)-length(q) ==0)
+%     likelihood = prod(q); 
+%  else
+%      likelihood = prod(q) * 0.9^(length(laser_angles_deg)-length(q));%(zRand/zMax)^(length(laser_angles_deg)-length(q));
+%  end
 
 % figure, imshow(lh_field)
 % hold on;

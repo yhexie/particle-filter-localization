@@ -33,15 +33,15 @@ std_dev_hit = 0.2; % Standard deviation error in a laser range measurement
 % std_dev_hit = 2;
 % lambda_short = 0.1; % Used to calculate the chance of hitting random people or unmapped obstacles
 lambda_short = 0.1;
-zParams = [0.8 0.1 0.0075 0.05]; % Weights for beam model [zHit zShort zMax zNoise]
+zParams = [0.8 0.1 0.075 0.05]; % Weights for beam model [zHit zShort zMax zNoise]
 % zParams = [0.6 0 0.1 0.3]
 % zParams = [0.3 0.15 0.0075 0.1];
 zParams = zParams / sum(zParams)
 
 %spacing between laser hits being considered
-num_interval=5;
-
+num_interval=1;
 laser_hit_p = zeros([max(size(1:num_interval:180)),2,numParticles]);
+
 % odom_params:
 %   4-by-1 vector of odometry error parameters
 % odom_params = [0.001 0.001 0.0001 0.0001 ]';
@@ -128,8 +128,8 @@ for k = 2:logLength
     end
     
     
-    hasMovement = velocity(k) > 0.1 || dtheta(k) > 0.01;
-    
+%     hasMovement = velocity(k) > 0.1 || dtheta(k) > 0.01;
+    hasMovement = 1;
     if (observation_index(k) > 1 && hasMovement)
         %% If observation occured
         % Verify time stamps
@@ -150,8 +150,13 @@ for k = 2:logLength
         tic
         
         lw = ones(numParticles,1);
-        if mod(count,8) == 0
+%         if mod(count,6) == 0
+        if mod(randi(2,1),2) == 0
+
             noise_val = 1/20;
+            num_interval=10;
+            laser_hit_p = zeros([max(size(1:num_interval:180)),2,numParticles]);
+
             parfor i = 1:numParticles
                 %w(i) = w(i)*beam_range_finder_model( zt, particle_mat(:,i), global_map, laser_max_range, std_dev_hit, lambda_short, zParams, occupied_threshold, map_resolution,num_interval);
                 [lw(i),laser_hit_p(:,:,i)] = beam_range_finder_model( zt,particle_mat(:,i), global_map, laser_max_range, std_dev_hit, lambda_short, zParams, occupied_threshold, map_resolution,num_interval);
@@ -159,7 +164,8 @@ for k = 2:logLength
             end
             
         else
-            noise_val = 1/5;
+            noise_val = 1/1.5;
+            num_interval=1;
             for i = 1:numParticles
                 lw(i)=likelihood_field_range_finder_model( zt, particle_mat(:,i), likelihood_field, laser_max_range, std_dev_hit, lambda_short, zParams, occupied_threshold, map_resolution );
             end
@@ -197,11 +203,11 @@ for k = 2:logLength
         % Check if we should reduce the number of particles?
         
         ess_value = ESS(w)
-        if ((ESS(w) < 0.2))
-            %             if (numParticles > 1000 && count > 5)
-            %                 numParticles = 1000;
-            %                 disp('REDUCING PARTICLE COUNT');
-            %             end
+        if ((ESS(w) < 0.05))
+            if (numParticles > 2000 && count > 30)
+                numParticles = 2000;
+                disp('REDUCING PARTICLE COUNT');
+            end
             disp('Resampling...');
             new_particle_mat = stochastic_resample(w, particle_mat', 0.9*numParticles);
             rand_particles = generateRandomParticles( 0.1*numParticles, global_map, map_resolution, free_threshold );
