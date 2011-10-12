@@ -1,19 +1,13 @@
 numInterval = 6;
-[z,laser_hit] =  findExpectedRange_(0, [40.25,40.0], global_map, 80, occupied_threshold, 0.1,numInterval);
-angle_deg = 0;
-angles = -pi/2:pi/180:pi/2-pi/180;
-angles = angles + deg2rad(angle_deg);
-s = max(size(angles));
-angles = angles(1:numInterval:s);
-r_vec = [cos(angles'),sin(angles'),zeros(size(angles'))];
-r_vec = r_vec.*repmat(z,1,3);
+[z,laser_hit] =  findExpectedRange_(0, [40.25,40.0], global_map,laser_max_range, occupied_threshold, 0.1,1);
+
 imshow(global_map)
 hold on
-plot(r_vec(:,2)/0.1+400,r_vec(:,1)/0.1 + 400,'r')
+plot(laser_hit(:,2,1),laser_hit(:,1,1),'.r')
 numParticles = 100;
 particle_mat = repmat([40;40;0],1,numParticles);
  xx = 0:10/size(particle_mat,2):(10-10/size(particle_mat,2));
- particle_mat(1,:) = particle_mat(1,:) + xx;
+particle_mat(1,:) = particle_mat(1,:) + xx;
 
  %particle_mat(3,:) = -pi:pi/500:pi-pi/500;
 zt = z;
@@ -33,21 +27,30 @@ zParams = zParams / sum(zParams)
 
 
 laser_hit = [];
+zp = [];
 for i = 1:numParticles
                 %w(i) = w(i)*beam_range_finder_model( zt, particle_mat(:,i), global_map, laser_max_range, std_dev_hit, lambda_short, zParams, occupied_threshold, map_resolution,num_interval);
                 [lw,laser_hit(:,:,i)] = beam_range_finder_model( zt,particle_mat(:,i), global_map, laser_max_range, std_dev_hit, lambda_short, zParams, occupied_threshold,map_resolution,numInterval);
                 w(i) = lw*w(i);
                 
                
-%                 z_p = findExpectedRange_(rad2deg(particle_mat(3,i)), particle_mat(1:2,i)', global_map, laser_max_range, occupied_threshold,map_resolution,numInterval);
-%                 plot(z_p,'b')
-%                 pause
+                 [zw,~] = findExpectedRange_(rad2deg(particle_mat(3,i)), particle_mat(1:2,i)'+[0.25,0.0], global_map, laser_max_range, occupied_threshold,map_resolution,numInterval);
+                 zp = [zp;zw'];
+                 
+                 
 end
 [~,max_ind]=max(w);
-plot(laser_hit(:,2,max_ind),laser_hit(:,1,max_ind),'g')
+plot(laser_hit(:,2,1),laser_hit(:,1,1),'.b')
+plot(laser_hit(:,2,max_ind),laser_hit(:,1,max_ind),'.g')
 
 figure, plot(w)
 norm_w = w./sum(w);
 norm_w = norm_w.^(1/10);
 norm_w = norm_w./sum(norm_w);
 figure, plot(norm_w)
+
+figure
+plot(z(1:numInterval:size(z,1)))
+hold on
+plot(zp(1,:),'r')
+plot(zp(max_ind,:),'g')

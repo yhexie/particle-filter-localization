@@ -17,7 +17,7 @@ r_vec = repmat(r_vec,1,size(r,2)/3);
 
 r_vec = r.*r_vec;
 rr_vec = r_vec;
-r_vec = round(r_vec);
+r_vec = floor(r_vec);
 
 z_expected = zeros(size(r_vec,1),1);
 laser_hit_p = zeros(size(r_vec,1),2);
