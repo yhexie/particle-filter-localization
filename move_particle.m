@@ -76,7 +76,7 @@ if numInvalidParticles > 0
 %         disp(numInvalidParticles)
     if (numInvalidParticles > numParticles/10 && recursion_count < 1)
         recursion_count = recursion_count + 1;
-        replacement_particles = move_particle( action, particle_mat(:,invalid_particles), odom_alpha, global_map, recursion_count );
+        replacement_particles = move_particle( action, particle_mat(:,invalid_particles), odom_alpha, global_map, free_threshold, recursion_count );
         new_particle_mat(:, invalid_particles) = replacement_particles;
     else
 %         disp('Number of invalid particles')

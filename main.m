@@ -23,20 +23,20 @@ mapPath = 'data/map/wean.dat';
 logPath = 'data/log/robotdata1.log';
 global numParticles laser_max_range std_dev_hit lambda_short zParams map_resolution
 
-numParticles = 10000; % Number of particles
+numParticles = 5000; % Number of particles
 w = ones(numParticles,1) / numParticles; % Particle weights - begin with uniform weight
 norm_w = w./sum(w);
 free_threshold = 0.89; % Cells less than this are considered occupied
 occupied_threshold = 0.1;
 
 laser_max_range = 81.8300; % Maximum laser range in meters
-% std_dev_hit = 0.2; % Standard deviation error in a laser range measurement
-std_dev_hit = 2;
+std_dev_hit = 0.2; % Standard deviation error in a laser range measurement
+% std_dev_hit = 2;
 % lambda_short = 0.1; % Used to calculate the chance of hitting random people or unmapped obstacles
 lambda_short = 0.03;
-% zParams = [0.7 0.2 0.0075 0.1]; % Weights for beam model [zHit zShort zMax zNoise]
+zParams = [0.7 0.2 0.0075 0.1]; % Weights for beam model [zHit zShort zMax zNoise]
 % zParams = [0.6 0 0.1 0.3]
-zParams = [0.3 0.15 0.0075 0.1];
+% zParams = [0.3 0.15 0.0075 0.1];
 zParams = zParams / sum(zParams)
 
 %spacing between laser hits being considered
@@ -149,7 +149,7 @@ for k = 2:logLength
             lostFlag = 0;
         else
             lostFlag = 1;
-            disp('Lost...');
+%             disp('Lost...');
         end
         
         %if lostFlag
@@ -175,7 +175,7 @@ for k = 2:logLength
             w(:) = 1/numParticles;
         else
             w = w./sum(w);
-            w = w.^(1/5);
+            w = w.^(1/25);
             w = w./sum(w);
         end
         
@@ -193,18 +193,28 @@ for k = 2:logLength
         
         % Check if we should reduce the number of particles?
         
-        if count == 4
-            numParticles = round(numParticles/10);
-        end
-        % Resample
-%         if ((ESS(w) < 0.1*numParticles))
-        if ((ESS(w) < 0.7))
-            %         if (mod(observation_index(k),5) == 0)
+        %         if count == 4
+        %             numParticles = round(numParticles/10);
+        %             disp('Resampling at lower particle count...');
+        %             new_particle_mat = stochastic_resample(w, particle_mat', numParticles);
+        %             particle_mat = new_particle_mat';
+        %             w = ones(numParticles, 1)/numParticles;
+        %         else
+        %             % Resample
+        ess_value = ESS(w)
+        if ((ESS(w) < 0.5))
+            if (numParticles > 1000 && count > 5)
+                numParticles = 1000;
+                disp('REDUCING PARTICLE COUNT');
+            end
             disp('Resampling...');
             new_particle_mat = stochastic_resample(w, particle_mat', numParticles);
             particle_mat = new_particle_mat';
             w = ones(numParticles, 1)/numParticles;
+            
+            
         end
+        %         end
         
         
     end % End observation update
@@ -221,7 +231,7 @@ for k = 2:logLength
 %         clf
 %         visualize_pf(global_map, [.1 .1], particle_mat', w, laser_data, robo_mask, particle_mat(:,best_particle)', k,num_interval);
     end
-    count
-    k
+%     count
+%     k
     
 end
