@@ -23,7 +23,7 @@ mapPath = 'data/map/wean.dat';
 logPath = 'data/log/robotdata1.log';
 global numParticles laser_max_range std_dev_hit lambda_short zParams map_resolution
 
-numParticles = 5000; % Number of particles
+numParticles = 1000; % Number of particles
 w = ones(numParticles,1) / numParticles; % Particle weights - begin with uniform weight
 norm_w = w./sum(w);
 free_threshold = 0.89; % Cells less than this are considered occupied
@@ -175,7 +175,7 @@ for k = 2:logLength
             w(:) = 1/numParticles;
         else
             w = w./sum(w);
-            w = w.^(1/25);
+            w = w.^(1/31);
             w = w./sum(w);
         end
         
@@ -202,11 +202,11 @@ for k = 2:logLength
         %         else
         %             % Resample
         ess_value = ESS(w)
-        if ((ESS(w) < 0.5))
-            if (numParticles > 1000 && count > 5)
-                numParticles = 1000;
-                disp('REDUCING PARTICLE COUNT');
-            end
+        if ((ESS(w) < 0.6))
+%             if (numParticles > 1000 && count > 5)
+%                 numParticles = 1000;
+%                 disp('REDUCING PARTICLE COUNT');
+%             end
             disp('Resampling...');
             new_particle_mat = stochastic_resample(w, particle_mat', numParticles);
             particle_mat = new_particle_mat';
