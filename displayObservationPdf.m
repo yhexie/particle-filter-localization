@@ -5,10 +5,11 @@ close all
 
 laser_max_range = 81;
 std_dev_hit = 2;
-lambda_short = 0.03; % Used to calculate the chance of hitting random people or unmapped obstacles
+lambda_short = 0.2; % Used to calculate the chance of hitting random people or unmapped obstacles
 
 % zParams = [0.7 0.2 0.0075 0.1]; % Weights for beam model [zHit zShort zMax zNoise]
-zParams = [0.3 0.15 0.0075 0.1]; % Weights for beam model [zHit zShort zMax zNoise]
+% zParams = [0.3 0.15 0.0075 0.1]; % Weights for beam model [zHit zShort zMax zNoise]
+zParams = [0.7 0.2 0.0075 0.1]; % Weights for beam model [zHit zShort zMax zNoise]
 
 zParams = zParams / sum(zParams)
 zHit = zParams(1);
@@ -17,7 +18,7 @@ zMax = zParams(3);
 zRand = zParams(4);
 
 
-z_expected = 50;
+z_expected = 60;
 
 zt = 0:0.001:laser_max_range;
 
