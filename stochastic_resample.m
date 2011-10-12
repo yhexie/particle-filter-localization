@@ -1,4 +1,4 @@
-function xn = stochastic_resample(w,x, numParticles)
+function xn = stochastic_resample(w,x, numParticles,number_particles_wanted)
 % figure
 % scatter3(x(:,1),x(:,2),w)
 w = w/sum(w);
@@ -16,3 +16,6 @@ for i=1:numParticles
 end
 
 xn = x(ind,:);
+
+wanted_index = ceil(rand(number_particles_wanted,1)*numParticles);
+xn = xn(wanted_index,:);

@@ -28,8 +28,8 @@ while(size(particle_mat_,2)<numParticles)
         keyboard
     end
     particle_mat_ = [particle_mat_,particle_mat];
-    display(size(particle_mat))
 end
+particle_mat_ = particle_mat_(:,1:numParticles);
 
 end
 

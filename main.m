@@ -28,7 +28,7 @@ w = ones(numParticles,1) / numParticles; % Particle weights - begin with uniform
 free_threshold = 0.89; % Cells less than this are considered occupied
 occupied_threshold = 0.1;
 
-laser_max_range = 81.8300; % Maximum laser range in meters
+laser_max_range = 81.8300; % Maxim`um laser range in meters
 std_dev_hit = 0.2; % Standard deviation error in a laser range measurement
 % std_dev_hit = 2;
 % lambda_short = 0.1; % Used to calculate the chance of hitting random people or unmapped obstacles
@@ -88,6 +88,9 @@ likelihood_field = imfilter(global_map_thresholded, h);
 % rng(2);
 
 [ particle_mat ] = generateRandomParticles( numParticles, global_map, map_resolution, free_threshold );
+%[ particle_mat_ ] = generateFocussedRandomParticles( numParticles/10, global_map, map_resolution, free_threshold,[40,41.3,0] );
+%particle_mat = [particle_mat(:,1:numParticles-numParticles/10),particle_mat_];
+
 
 
 k = 1;
@@ -151,12 +154,12 @@ for k = 2:logLength
         
         lw = ones(numParticles,1);
 %         if mod(count,6) == 0
-        if mod(randi(2,1),2) == 0
+        if max(zt) > 20
 
-            noise_val = 1/20;
+            noise_val = 1/15;
             num_interval=10;
             laser_hit_p = zeros([max(size(1:num_interval:180)),2,numParticles]);
-
+            display('BeamRangeModel')
             parfor i = 1:numParticles
                 %w(i) = w(i)*beam_range_finder_model( zt, particle_mat(:,i), global_map, laser_max_range, std_dev_hit, lambda_short, zParams, occupied_threshold, map_resolution,num_interval);
                 [lw(i),laser_hit_p(:,:,i)] = beam_range_finder_model( zt,particle_mat(:,i), global_map, laser_max_range, std_dev_hit, lambda_short, zParams, occupied_threshold, map_resolution,num_interval);
@@ -164,7 +167,8 @@ for k = 2:logLength
             end
             
         else
-            noise_val = 1/1.5;
+            display('likelyhood field')
+            noise_val = 1/2;
             num_interval=1;
             for i = 1:numParticles
                 lw(i)=likelihood_field_range_finder_model( zt, particle_mat(:,i), likelihood_field, laser_max_range, std_dev_hit, lambda_short, zParams, occupied_threshold, map_resolution );
@@ -209,9 +213,9 @@ for k = 2:logLength
                 disp('REDUCING PARTICLE COUNT');
             end
             disp('Resampling...');
-            new_particle_mat = stochastic_resample(w, particle_mat', 0.9*numParticles);
-            rand_particles = generateRandomParticles( 0.1*numParticles, global_map, map_resolution, free_threshold );
-            particle_mat = [new_particle_mat' rand_particles];
+            new_particle_mat = stochastic_resample(w, particle_mat', numParticles,0.9*numParticles);
+            [ rand_particle_mat ] = generateRandomParticles( 0.1*numParticles, global_map, map_resolution, free_threshold );
+            particle_mat = [new_particle_mat' rand_particle_mat];
             w = ones(numParticles, 1)/numParticles;
             
             

@@ -15,5 +15,7 @@ particle_mat = [    map_resolution*freeCellsX(freeCellIndices(1:numParticles))';
 particle_mat = particle_mat + [0.1*randn(numParticles,1) 0.1*randn(numParticles,1) 5*(pi/180)*randn(numParticles,1)]';
 
 
+% particle_mat = [40.1 + 5*randn(numParticles,1) 41.3 + 5*randn(numParticles,1) -pi/2 + 30*(pi/180)*randn(numParticles,1)]';
+
 end
 
