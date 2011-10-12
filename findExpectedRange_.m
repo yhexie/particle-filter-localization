@@ -1,4 +1,4 @@
-function [ z_expected ] = findExpectedRange_(angle_deg, position, map, laserRange_m, occupied_threshold, map_resolution,num_interval)
+function [ z_expected,laser_hit_p ] = findExpectedRange_(angle_deg, position, map, laserRange_m, occupied_threshold, map_resolution,num_interval)
 % tic
 
 angles = -pi/2:pi/180:pi/2-pi/180;
@@ -16,9 +16,11 @@ r = repmat(r,size(r_vec,1),1);
 r_vec = repmat(r_vec,1,size(r,2)/3);
 
 r_vec = r.*r_vec;
-r_vec = floor(r_vec);
+rr_vec = r_vec;
+r_vec = round(r_vec);
 
 z_expected = zeros(size(r_vec,1),1);
+laser_hit_p = zeros(size(r_vec,1),2);
 
 for i=1:size(r_vec,1)
     ray = r_vec(i,:);
@@ -44,12 +46,18 @@ for i=1:size(r_vec,1)
     
     
     if(isempty(a))
-        z_expected(i) =laserRange_m;
+        z_expected(i) =laserRange_m/map_resolution;
     else
         z_expected(i) = ray(a,3);
 %         hits(i,:) = [ray(a,1),ray(a,2)];
     end
-
+%     if(norm(r_vec(i,4:5))==0)
+%         display('wow')
+%     end 
+    laser_hit_p(i,:) =   z_expected(i)*rr_vec(i,4:5)/norm(rr_vec(i,4:5));
+    laser_hit_p(i,1) = laser_hit_p(i,1) + position(1)/map_resolution;
+    laser_hit_p(i,2) = laser_hit_p(i,2) + position(2)/map_resolution;
+    
 end
 z_expected  = z_expected*map_resolution;
 % figure, plot(z_expected, '.');

@@ -1,4 +1,4 @@
-function visualize_pf(map,scale,x,w,observation,mask,selected_particle,count,num_interval)
+function visualize_pf(map,scale,x,w,observation,mask,selected_particle,count,num_interval,laser_hit_p)
 %map is the grid map (800X800)
 % x is the particle matrix nX3
 % w are the weights(nX1)
@@ -73,6 +73,7 @@ imshow(im, 'InitialMagnification', 'fit')
 hold on
 patch(mask(:,2),mask(:,1),'b','FaceAlpha',0.7)
 patch(r_vec(:,2),r_vec(:,1),'y','FaceAlpha',0.2);
+patch(laser_hit_p(:,2),laser_hit_p(:,1),'c','FaceAlpha',0.2);
 saveas(gcf, strcat('movie/',strcat(int2str(count),'.jpg')));
 % set(gcf,'PaperType','A5');
 % print(gcf,strcat('movie/',strcat(int2str(count),'.tif')),'-dtiff','-r300');

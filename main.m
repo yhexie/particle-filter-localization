@@ -42,6 +42,7 @@ zParams = zParams / sum(zParams)
 %spacing between laser hits being considered
 num_interval=5;
 
+laser_hit_p = zeros([max(size(1:num_interval:180)),2,numParticles]);
 % odom_params:
 %   4-by-1 vector of odometry error parameters
 % odom_params = [0.001 0.001 0.0001 0.0001 ]';
@@ -153,7 +154,10 @@ for k = 2:logLength
         
         %if lostFlag
             parfor i = 1:numParticles
-                w(i) = w(i)*beam_range_finder_model( zt, particle_mat(:,i), global_map, laser_max_range, std_dev_hit, lambda_short, zParams, occupied_threshold, map_resolution,num_interval);
+                %w(i) = w(i)*beam_range_finder_model( zt, particle_mat(:,i), global_map, laser_max_range, std_dev_hit, lambda_short, zParams, occupied_threshold, map_resolution,num_interval);
+                [lw,laser_hit_p(:,:,i)] = beam_range_finder_model( zt,particle_mat(:,i), global_map, laser_max_range, std_dev_hit, lambda_short, zParams, occupied_threshold, map_resolution,num_interval);
+                w(i) = lw*w(i);
+                
             end
             
         %else
@@ -183,7 +187,7 @@ for k = 2:logLength
         
         figure(1)
         clf
-        visualize_pf(global_map, [.1 .1], particle_mat', w, zt, robo_mask, particle_mat(:,best_particle)', k,num_interval);
+        visualize_pf(global_map, [.1 .1], particle_mat', w, zt, robo_mask, particle_mat(:,best_particle)', k,num_interval,laser_hit_p(:,:,best_particle));
         refresh
         pause(0.1)
         

@@ -1,4 +1,4 @@
-function [ q ] = beam_range_finder_model( zt, xt, map, laser_max_range, std_dev_hit, lambda_short, zParams, occupied_threshold, map_resolution,num_interval )
+function [ q,laser_hit_p ] = beam_range_finder_model( zt, xt, map, laser_max_range, std_dev_hit, lambda_short, zParams, occupied_threshold, map_resolution,num_interval )
 %beam_range_finder_model Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -31,7 +31,7 @@ laser_position_m = robot_position_m + [ 0.25*cosd(robot_angle_deg);
 
 % z_expected = zeros(1,numLaserScans);
 
-z_expected = findExpectedRange_(robot_angle_deg, laser_position_m, map, laser_max_range, occupied_threshold, map_resolution,num_interval);
+[z_expected,laser_hit_p] = findExpectedRange_(robot_angle_deg, laser_position_m, map, laser_max_range, occupied_threshold, map_resolution,num_interval);
 
 count = 1;
 for k = 1:num_interval:numLaserScans
