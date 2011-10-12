@@ -23,7 +23,7 @@ mapPath = 'data/map/wean.dat';
 logPath = 'data/log/robotdata1.log';
 global numParticles laser_max_range std_dev_hit lambda_short zParams map_resolution
 
-numParticles = 5000; % Number of particles
+numParticles = 10000; % Number of particles
 w = ones(numParticles,1) / numParticles; % Particle weights - begin with uniform weight
 free_threshold = 0.89; % Cells less than this are considered occupied
 occupied_threshold = 0.1;
@@ -33,13 +33,13 @@ std_dev_hit = 0.2; % Standard deviation error in a laser range measurement
 % std_dev_hit = 2;
 % lambda_short = 0.1; % Used to calculate the chance of hitting random people or unmapped obstacles
 lambda_short = 0.1;
-zParams = [0.7 0.2 0.0075 0.05]; % Weights for beam model [zHit zShort zMax zNoise]
+zParams = [0.8 0.1 0.0075 0.05]; % Weights for beam model [zHit zShort zMax zNoise]
 % zParams = [0.6 0 0.1 0.3]
 % zParams = [0.3 0.15 0.0075 0.1];
 zParams = zParams / sum(zParams)
 
 %spacing between laser hits being considered
-num_interval=15;
+num_interval=5;
 
 laser_hit_p = zeros([max(size(1:num_interval:180)),2,numParticles]);
 % odom_params:
@@ -85,7 +85,7 @@ likelihood_field = imfilter(global_map_thresholded, h);
 %% Generate random starting particles in free space
 
 % Seed the random number generate so we can get repeatable results
-rng(0);
+% rng(2);
 
 [ particle_mat ] = generateRandomParticles( numParticles, global_map, map_resolution, free_threshold );
 
@@ -150,17 +150,20 @@ for k = 2:logLength
         tic
         
         lw = ones(numParticles,1);
-        parfor i = 1:numParticles
-            %w(i) = w(i)*beam_range_finder_model( zt, particle_mat(:,i), global_map, laser_max_range, std_dev_hit, lambda_short, zParams, occupied_threshold, map_resolution,num_interval);
-            [lw(i),laser_hit_p(:,:,i)] = beam_range_finder_model( zt,particle_mat(:,i), global_map, laser_max_range, std_dev_hit, lambda_short, zParams, occupied_threshold, map_resolution,num_interval);
+        if mod(count,8) == 0
+            noise_val = 1/20;
+            parfor i = 1:numParticles
+                %w(i) = w(i)*beam_range_finder_model( zt, particle_mat(:,i), global_map, laser_max_range, std_dev_hit, lambda_short, zParams, occupied_threshold, map_resolution,num_interval);
+                [lw(i),laser_hit_p(:,:,i)] = beam_range_finder_model( zt,particle_mat(:,i), global_map, laser_max_range, std_dev_hit, lambda_short, zParams, occupied_threshold, map_resolution,num_interval);
+                
+            end
             
+        else
+            noise_val = 1/5;
+            for i = 1:numParticles
+                lw(i)=likelihood_field_range_finder_model( zt, particle_mat(:,i), likelihood_field, laser_max_range, std_dev_hit, lambda_short, zParams, occupied_threshold, map_resolution );
+            end
         end
-        
-        %else
-        %   for i = 1:numParticles
-        %       w(i) = w(i)*likelihood_field_range_finder_model( zt, particle_mat(:,i), likelihood_field, laser_max_range, std_dev_hit, lambda_short, zParams, occupied_threshold, map_resolution );
-        %   end
-        %end
         
         toc
         count = count + 1;
@@ -173,7 +176,8 @@ for k = 2:logLength
             
             w = w./sum(w);
             lw = lw./sum(lw);
-            reduced_lw = lw.^(1/20);
+%             reduced_lw = lw.^(1/20);
+            reduced_lw = lw.^(noise_val);
             reduced_lw = reduced_lw./sum(reduced_lw);
             w = reduced_lw.*w;
         end
