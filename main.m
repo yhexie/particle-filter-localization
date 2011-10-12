@@ -33,7 +33,7 @@ std_dev_hit = 0.2; % Standard deviation error in a laser range measurement
 % std_dev_hit = 2;
 % lambda_short = 0.1; % Used to calculate the chance of hitting random people or unmapped obstacles
 lambda_short = 0.1;
-zParams = [0.8 0.1 0.075 0.05]; % Weights for beam model [zHit zShort zMax zNoise]
+zParams = [0.7 0.2 0.1 0.1]; % Weights for beam model [zHit zShort zMax zNoise]
 % zParams = [0.6 0 0.1 0.3]
 % zParams = [0.3 0.15 0.0075 0.1];
 zParams = zParams / sum(zParams)
@@ -44,8 +44,8 @@ laser_hit_p = zeros([max(size(1:num_interval:180)),2,numParticles]);
 
 % odom_params:
 %   4-by-1 vector of odometry error parameters
-% odom_params = [0.001 0.001 0.0001 0.0001 ]';
-odom_params = [0.05 0.01 0.005 0.0005]';
+odom_params = [0.001 0.001 0.0001 0.0001 ]';
+% odom_params = [0.05 0.01 0.005 0.0005]';
 
 
 
