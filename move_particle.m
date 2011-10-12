@@ -1,4 +1,4 @@
-function [ new_particle_mat ] = move_particle( action, particle_mat, odom_alpha, global_map, free_threshold, recursion_count )
+function [ new_particle_mat, new_weights ] = move_particle( action, particle_mat, weights, odom_alpha, global_map, free_threshold, recursion_count )
 %move_particle Moves all the particles according to the measured action and
 %               motion model
 
@@ -70,22 +70,27 @@ map_index = sub2ind(size(global_map), x_coor, y_coor);
 invalid_particles = global_map(map_index) < free_threshold;
 numInvalidParticles = sum(invalid_particles);
 
-% recursion time?
-if numInvalidParticles > 0
-%      disp('Number of invalid particles')
-%         disp(numInvalidParticles)
-    if (numInvalidParticles > numParticles/10 && recursion_count < 1)
-        recursion_count = recursion_count + 1;
-        replacement_particles = move_particle( action, particle_mat(:,invalid_particles), odom_alpha, global_map, free_threshold, recursion_count );
-        new_particle_mat(:, invalid_particles) = replacement_particles;
-    else
-%         disp('Number of invalid particles')
-%         disp(numInvalidParticles)
-        [ replacement_particles ] = generateRandomParticles( numInvalidParticles, global_map, map_resolution, free_threshold );
-        new_particle_mat(:, invalid_particles) = replacement_particles;
-%         disp(['Added ' num2str(numInvalidParticles) ' random particles...']);
-    end
-end
+new_particle_mat(:,invalid_particles) = [];
+new_weights = weights(~invalid_particles);
+
+
+% 
+% % recursion time?
+% if numInvalidParticles > 0
+% %      disp('Number of invalid particles')
+% %         disp(numInvalidParticles)
+%     if (numInvalidParticles > numParticles/10 && recursion_count < 1)
+%         recursion_count = recursion_count + 1;
+%         replacement_particles = move_particle( action, particle_mat(:,invalid_particles), odom_alpha, global_map, free_threshold, recursion_count );
+%         new_particle_mat(:, invalid_particles) = replacement_particles;
+%     else
+% %         disp('Number of invalid particles')
+% %         disp(numInvalidParticles)
+%         [ replacement_particles ] = generateRandomParticles( numInvalidParticles, global_map, map_resolution, free_threshold );
+%         new_particle_mat(:, invalid_particles) = replacement_particles;
+% %         disp(['Added ' num2str(numInvalidParticles) ' random particles...']);
+%     end
+% end
 
 end
 
