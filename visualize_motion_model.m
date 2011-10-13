@@ -13,6 +13,7 @@ action = [0 0 0*pi/180 1 1 45*pi/180]';
 single_particle = [40 40 0]';
 numParticles = 10000;
 particle_mat = repmat(single_particle, 1, numParticles);
+weights = ones(1,length(particle_mat)) / numParticles;
 
 % odom_params:
 %   4-by-1 vector of odometry error parameters
@@ -23,13 +24,13 @@ particle_mat = repmat(single_particle, 1, numParticles);
 % odom_params = [0.001 0.001 0.0001 0.0001 ]';
 odom_params = [0.05 0.01 0.005 0.0005]';
 
-
+free_threshold = 0.89;
 global_map = ones(800,800);
 recursion_count = 0;
 
 
 
-[ new_particle_mat ] = move_particle( action, particle_mat, odom_params, global_map, recursion_count );
+[ new_particle_mat ] = move_particle( action, particle_mat, weights, odom_params, global_map, free_threshold, recursion_count );
 
 true_position = single_particle + action(4:6) - action(1:3);
 
@@ -39,6 +40,8 @@ plot(new_particle_mat(1,:), new_particle_mat(2,:), '.', 'MarkerSize', 3);
 hold on;
 plot(single_particle(1,:), single_particle(2,:), 'ro');
 hold on;
-plot(true_position(1,:), true_position(2,:), 'gx');
+plot(true_position(1,:), true_position(2,:), 'rx', 'MarkerSize', 10, 'LineWidth', 2);
 hold on;
+plot([single_particle(1,:); true_position(1,:)], [single_particle(2,:); true_position(2,:)], 'r');
+
 axis equal
