@@ -20,7 +20,7 @@ end
 %% Set parameters
 
 mapPath = 'data/map/wean.dat';
-logPath = 'data/log/robotdata1.log';
+logPath = 'data/log/robotdata2.log';
 global numParticles laser_max_range std_dev_hit lambda_short zParams map_resolution
 
 numParticles = 10000; % Number of particles
@@ -122,7 +122,8 @@ for k = 2:logLength
     action = [p_robot(k-1,1:3) p_robot(k,1:3)]';
     
     recursion_count = 0;
-    particle_mat = move_particle(action, particle_mat, odom_params, global_map, free_threshold, recursion_count);
+    [particle_mat, w] = move_particle(action, particle_mat, w, odom_params, global_map, free_threshold, recursion_count);
+    numParticles = length(particle_mat);
     
     if observation_index(k) > 1
         laser_data = z_range(observation_index(k),1:180);
@@ -131,8 +132,8 @@ for k = 2:logLength
     end
     
     
-%     hasMovement = velocity(k) > 0.1 || dtheta(k) > 0.01;
-    hasMovement = 1;
+    hasMovement = velocity(k) > 0.1 || dtheta(k) > 0.01;
+    
     if (observation_index(k) > 1 && hasMovement)
         %% If observation occured
         % Verify time stamps
@@ -154,7 +155,7 @@ for k = 2:logLength
         
         lw = ones(numParticles,1);
 %         if mod(count,6) == 0
-        if max(zt) > 20
+        if round(rand(1))
 
             noise_val = 1/15;
             num_interval=10;
@@ -208,14 +209,19 @@ for k = 2:logLength
         
         ess_value = ESS(w)
         if ((ESS(w) < 0.05))
-            if (numParticles > 2000 && count > 30)
-                numParticles = 2000;
+            if (count > 30)
+                numParticles = 10000;
                 disp('REDUCING PARTICLE COUNT');
+            else
+                if numParticles < 10000
+                    numParticles = 10000;
+                end
             end
             disp('Resampling...');
-            new_particle_mat = stochastic_resample(w, particle_mat', numParticles,0.9*numParticles);
-            [ rand_particle_mat ] = generateRandomParticles( 0.1*numParticles, global_map, map_resolution, free_threshold );
+            new_particle_mat = stochastic_resample(w, particle_mat', numParticles,round(0.9*numParticles));
+            [ rand_particle_mat ] = generateRandomParticles( round(0.1*numParticles), global_map, map_resolution, free_threshold );
             particle_mat = [new_particle_mat' rand_particle_mat];
+            numParticles = length(particle_mat);
             w = ones(numParticles, 1)/numParticles;
             
             
