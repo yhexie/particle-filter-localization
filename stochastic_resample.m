@@ -16,7 +16,7 @@ rand_number = repmat(rand_number,numParticles,1);
 rand_number = rand_number + (1:numParticles)'*num_to_add;
 rand_number  = rem(rand_number,1);
 ind = zeros(numParticles,1);
-for i=1:numParticles
+parfor i=1:numParticles
    [ind(i),~] =  find(wc>=rand_number(i),1,'first');
    
 end
