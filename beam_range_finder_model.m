@@ -29,19 +29,11 @@ robot_position_m = xt(1:2);
 laser_position_m = robot_position_m + [ 0.25*cosd(robot_angle_deg); 
                                         0.25*sind(robot_angle_deg)];
 
-% z_expected = zeros(1,numLaserScans);
-
 [z_expected,laser_hit_p] = findExpectedRange_(robot_angle_deg, laser_position_m', map, laser_max_range, occupied_threshold, map_resolution,num_interval);
-
 
 count = 1;
 for k = 1:num_interval:numLaserScans
-    
-%     laser_angle_deg = robot_angle_deg - 90 + (k - 0.5);
-    % Ray cast to find expected range
-    
-%     z_expected(k) = findExpectedRange(laser_angle_deg, laser_position_m, map, laser_max_range, occupied_threshold, map_resolution);
-    
+
     pHit = calcProbHit(zt(k), z_expected(count), laser_max_range, std_dev_hit);
     pShort = calcProbShort(zt(k), z_expected(count), laser_max_range, lambda_short);
     pMax = calcProbMax(zt(k), z_expected(count), laser_max_range);
