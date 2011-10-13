@@ -4,12 +4,14 @@ numInterval = 6;
 imshow(global_map)
 hold on
 plot(laser_hit(:,2,1),laser_hit(:,1,1),'.r')
-numParticles = 100;
-particle_mat = repmat([40;40;0],1,numParticles);
- xx = 0:10/size(particle_mat,2):(10-10/size(particle_mat,2));
+numParticles = 1000;
+ 
+ 
+particle_mat = repmat([30;40;0],1,numParticles);
+ xx = 0:20/size(particle_mat,2):(20-20/size(particle_mat,2));
 particle_mat(1,:) = particle_mat(1,:) + xx;
 
- %particle_mat(3,:) = -pi:pi/500:pi-pi/500;
+%  particle_mat(3,:) = -pi:pi/500:pi-pi/500;
 zt = z;
 
 w = ones(numParticles,1);
@@ -39,9 +41,13 @@ for i = 1:numParticles
                  
                  
 end
+
+% for i = 1:numParticles
+%                 w(i)=likelihood_field_range_finder_model( zt', particle_mat(:,i), likelihood_field, laser_max_range, std_dev_hit, lambda_short, zParams, occupied_threshold, map_resolution );
+% end
 [~,max_ind]=max(w);
-plot(laser_hit(:,2,1),laser_hit(:,1,1),'.b')
-plot(laser_hit(:,2,max_ind),laser_hit(:,1,max_ind),'.g')
+% plot(laser_hit(:,2,1),laser_hit(:,1,1),'.b')
+% plot(laser_hit(:,2,max_ind),laser_hit(:,1,max_ind),'.g')
 
 figure, plot(w)
 norm_w = w./sum(w);
@@ -49,8 +55,8 @@ norm_w = norm_w.^(1/10);
 norm_w = norm_w./sum(norm_w);
 figure, plot(norm_w)
 
-figure
-plot(z(1:numInterval:size(z,1)))
-hold on
-plot(zp(1,:),'r')
-plot(zp(max_ind,:),'g')
+% figure
+% plot(z(1:numInterval:size(z,1)))
+% hold on
+% plot(zp(1,:),'r')
+% plot(zp(max_ind,:),'g')
