@@ -20,7 +20,7 @@ end
 %% Set parameters
 
 mapPath = 'data/map/wean.dat';
-logPath = 'data/log/robotdata2.log';
+logPath = 'data/log/ascii-robotdata3.log';
 global numParticles laser_max_range std_dev_hit lambda_short zParams map_resolution
 
 numParticles = 10000; % Number of particles
@@ -28,7 +28,7 @@ w = ones(numParticles,1) / numParticles; % Particle weights - begin with uniform
 free_threshold = 0.89; % Cells less than this are considered occupied
 occupied_threshold = 0.1;
 
-laser_max_range = 81.8300; % Maxim`um laser range in meters
+laser_max_range = 81.8300; % Maximum laser range in meters
 std_dev_hit = 0.2; % Standard deviation error in a laser range measurement
 % std_dev_hit = 2;
 % lambda_short = 0.1; % Used to calculate the chance of hitting random people or unmapped obstacles
@@ -88,9 +88,6 @@ likelihood_field = imfilter(global_map_thresholded, h);
 % rng(2);
 
 [ particle_mat ] = generateRandomParticles( numParticles, global_map, map_resolution, free_threshold );
-%[ particle_mat_ ] = generateFocussedRandomParticles( numParticles/10, global_map, map_resolution, free_threshold,[40,41.3,0] );
-%particle_mat = [particle_mat(:,1:numParticles-numParticles/10),particle_mat_];
-
 
 
 k = 1;
@@ -122,7 +119,7 @@ for k = 2:logLength
     action = [p_robot(k-1,1:3) p_robot(k,1:3)]';
     
     recursion_count = 0;
-    [particle_mat, w] = move_particle(action, particle_mat, w, odom_params, global_map, free_threshold, recursion_count);
+    [particle_mat,w] = move_particle(action, particle_mat, w, odom_params, global_map, free_threshold, recursion_count);
     numParticles = length(particle_mat);
     
     if observation_index(k) > 1
@@ -132,8 +129,8 @@ for k = 2:logLength
     end
     
     
-    hasMovement = velocity(k) > 0.1 || dtheta(k) > 0.01;
-    
+    %     hasMovement = velocity(k) > 0.1 || dtheta(k) > 0.01;
+    hasMovement = 1;
     if (observation_index(k) > 1 && hasMovement)
         %% If observation occured
         % Verify time stamps
@@ -154,13 +151,12 @@ for k = 2:logLength
         tic
         
         lw = ones(numParticles,1);
-%         if mod(count,6) == 0
+        %         if mod(count,4) == 0
         if round(rand(1))
-
-            noise_val = 1/15;
+            noise_val = 1/20;
             num_interval=10;
             laser_hit_p = zeros([max(size(1:num_interval:180)),2,numParticles]);
-            display('BeamRangeModel')
+            numParticles
             parfor i = 1:numParticles
                 %w(i) = w(i)*beam_range_finder_model( zt, particle_mat(:,i), global_map, laser_max_range, std_dev_hit, lambda_short, zParams, occupied_threshold, map_resolution,num_interval);
                 [lw(i),laser_hit_p(:,:,i)] = beam_range_finder_model( zt,particle_mat(:,i), global_map, laser_max_range, std_dev_hit, lambda_short, zParams, occupied_threshold, map_resolution,num_interval);
@@ -168,9 +164,8 @@ for k = 2:logLength
             end
             
         else
-            display('likelyhood field')
             noise_val = 1/2;
-            num_interval=1;
+            num_interval=5;
             for i = 1:numParticles
                 lw(i)=likelihood_field_range_finder_model( zt, particle_mat(:,i), likelihood_field, laser_max_range, std_dev_hit, lambda_short, zParams, occupied_threshold, map_resolution );
             end
@@ -187,21 +182,23 @@ for k = 2:logLength
             
             w = w./sum(w);
             lw = lw./sum(lw);
-%             reduced_lw = lw.^(1/20);
+            %             reduced_lw = lw.^(1/20);
             reduced_lw = lw.^(noise_val);
             reduced_lw = reduced_lw./sum(reduced_lw);
             w = reduced_lw.*w;
         end
-        
-        
+                
         figure(2)
         plot(w, '.');
-        [~, best_particle] = max(w);
-        ylim([ 0 1.25*max(w)])
+        [val, best_particle] = max(w);
+        if val == 0
+            keyboard
+        end
+        ylim([ 0 1.25*val])
         
         figure(1)
         clf
-        visualize_pf(global_map, [.1 .1], particle_mat', w, zt, robo_mask, particle_mat(:,best_particle)', k,num_interval,laser_hit_p(:,:,best_particle));
+        visualize_pf(global_map, [.1 .1], particle_mat', w, zt, robo_mask, particle_mat(:,best_particle)', k,num_interval,0);
         refresh
         pause(0.1)
         
@@ -209,8 +206,8 @@ for k = 2:logLength
         
         ess_value = ESS(w)
         if ((ESS(w) < 0.05))
-            if (count > 30)
-                numParticles = 10000;
+            if (count > 20)
+                numParticles = 1000;
                 disp('REDUCING PARTICLE COUNT');
             else
                 if numParticles < 10000
@@ -218,12 +215,13 @@ for k = 2:logLength
                 end
             end
             disp('Resampling...');
-            new_particle_mat = stochastic_resample(w, particle_mat', numParticles,round(0.9*numParticles));
-            [ rand_particle_mat ] = generateRandomParticles( round(0.1*numParticles), global_map, map_resolution, free_threshold );
-            particle_mat = [new_particle_mat' rand_particle_mat];
+            %new_particle_mat = stochastic_resample(w, particle_mat', length(w), round(0.9*numParticles));
+            %rand_particles = generateRandomParticles( round(0.1*numParticles), global_map, map_resolution, free_threshold );
+            %particle_mat = [new_particle_mat' rand_particles];
+            new_particle_mat = stochastic_resample(w, particle_mat', length(w), numParticles);
+            particle_mat = new_particle_mat';
             numParticles = length(particle_mat);
             w = ones(numParticles, 1)/numParticles;
-            
             
         end
         
