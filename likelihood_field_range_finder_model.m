@@ -28,7 +28,7 @@ robot_position_m = xt(1:2);
 laser_position_m = robot_position_m + [ 0.25*cosd(robot_angle_deg); 
                                         0.25*sind(robot_angle_deg)];
                
-interval = 10;                                    
+interval = 5;                                    
 laser_angles_deg = 0.5:interval:179.5;   
 laser_positions_m = repmat(laser_position_m, 1, length(laser_angles_deg));
 
